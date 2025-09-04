@@ -1,23 +1,54 @@
-import { Check, Copy, FileText, Zap } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useLiveQuery } from "@tanstack/react-db";
+
+import { Check, Copy, FileText } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
+import { createMessagesCollection } from "~/lib/collection/messageCollection";
+import { Route } from "~/routes/text-sync/$id";
 
-interface TextSyncAreaProps {
-	text: string;
-	onTextChange: (text: string) => void;
-	onCopyText: () => void;
-	copied: boolean;
-	isConnected?: boolean;
-}
+import type { MessagesSelect } from "~/validation/types";
 
-export function TextSyncArea({
-	text,
-	onTextChange,
-	onCopyText,
-	copied,
-	isConnected = true,
-}: TextSyncAreaProps) {
+export function TextSyncArea() {
+	const { id: roomId } = Route.useParams();
+	const messagesCollection = createMessagesCollection(roomId);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+	const [copied, setCopied] = useState(false);
+
+	const messageUpdate = (message: MessagesSelect) => {
+		if (!message?.id) return;
+
+		try {
+			messagesCollection.update(message.id, (draft) => {
+				draft.content = message.content;
+			});
+		} catch (error) {
+			console.warn(
+				"Message not found in collection, skipping update:",
+				message.id,
+			);
+		}
+	};
+
+	const { data: messages } = useLiveQuery((q) =>
+		q.from({ messagesCollection }),
+	);
+
+	const message = messages[0];
+
+	const content = message?.content || "";
+
+	const handleCopyText = async () => {
+		if (content) {
+			try {
+				await navigator.clipboard.writeText(content);
+				setCopied(true);
+				setTimeout(() => setCopied(false), 2000);
+			} catch (err) {
+				console.error("Failed to copy content:", err);
+			}
+		}
+	};
 
 	// Auto-resize textarea
 	useEffect(() => {
@@ -27,76 +58,81 @@ export function TextSyncArea({
 		}
 	}, []);
 
+	function handleTextChange(value: string): void {
+		// Only update if we have a valid message
+		if (!message?.id) {
+			console.warn("No message available to update");
+			return;
+		}
+
+		const newMessage = {
+			...message,
+			content: value,
+		};
+		messageUpdate(newMessage);
+	}
+
 	return (
 		<div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/20 overflow-hidden">
 			{/* Header */}
 			<div className="p-6 border-b border-gray-200 dark:border-gray-700">
 				<div className="flex items-center justify-between">
 					<div>
-						<h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-							<FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-							Synchronized Text
+						<h3 className="content-lg font-semibold content-gray-900 dark:content-white flex items-center gap-2">
+							<FileText className="w-5 h-5 content-blue-600 dark:content-blue-400" />
+							Synchronized content
 						</h3>
-						<p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
-							Type or paste text here - it will sync across all connected
+						<p className="content-gray-600 dark:content-gray-300 content-sm mt-1">
+							Type or paste content here - it will sync across all connected
 							devices
 						</p>
-					</div>
-					<div className="flex items-center gap-4">
-						<div className="flex items-center gap-2">
-							<Zap
-								className={`w-5 h-5 ${isConnected ? "text-yellow-500" : "text-gray-400"}`}
-							/>
-							<span className="text-sm text-gray-600 dark:text-gray-300">
-								{isConnected ? "Real-time" : "Offline"}
-							</span>
-						</div>
 					</div>
 				</div>
 			</div>
 
-			{/* Text Area */}
+			{/* content Area */}
 			<div className="p-6">
 				<div className="relative">
 					<textarea
 						ref={textareaRef}
-						value={text}
-						onChange={(e) => onTextChange(e.target.value)}
-						placeholder="Start typing or paste your text here..."
-						className="w-full min-h-[300px] p-4 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 font-mono text-sm leading-relaxed"
+						value={content}
+						onChange={(e) => handleTextChange(e.target.value)}
+						placeholder="Start typing or paste your content here..."
+						className="w-full min-h-[300px] p-4 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 content-gray-900 dark:content-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 font-mono content-sm leading-relaxed"
 						style={{ height: "auto" }}
 					/>
-
-					{/* Sync indicator overlay */}
-					{isConnected && text && (
-						<div className="absolute top-2 right-2">
-							<div className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-full">
-								<div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-								Synced
-							</div>
-						</div>
-					)}
 				</div>
 
 				{/* Footer */}
 				<div className="flex items-center justify-between mt-4">
-					<div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+					<div className="flex items-center gap-4 content-sm content-gray-500 dark:content-gray-400">
 						<div className="flex items-center gap-2">
-							<span>{text.length} characters</span>
+							<span>{content.length} characters</span>
 						</div>
 						<div className="flex items-center gap-2">
-							<span>{text.split("\n").length} lines</span>
+							<span>{content.split("\n").length} lines</span>
 						</div>
+						{content && (
+							<div className="flex items-center gap-2">
+								<span>
+									{
+										content.split(/\s+/).filter((word) => word.length > 0)
+											.length
+									}{" "}
+									words
+								</span>
+							</div>
+						)}
 					</div>
 
 					<div className="flex items-center gap-2">
 						{/* Clear button */}
-						{text && (
+						{content && (
 							<Button
 								variant="outline"
 								size="sm"
-								onClick={() => onTextChange("")}
-								className="text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+								onClick={() => handleTextChange("")}
+								className="content-gray-600 dark:content-gray-400 hover:content-red-600 dark:hover:content-red-400"
 							>
 								Clear
 							</Button>
@@ -104,9 +140,9 @@ export function TextSyncArea({
 
 						{/* Copy button */}
 						<Button
-							onClick={onCopyText}
-							disabled={!text}
-							className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white transition-all duration-200 transform hover:scale-105"
+							onClick={handleCopyText}
+							disabled={!content}
+							className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 content-white transition-all duration-200 transform hover:scale-105"
 						>
 							{copied ? (
 								<>
@@ -116,7 +152,7 @@ export function TextSyncArea({
 							) : (
 								<>
 									<Copy className="w-4 h-4 mr-2" />
-									Copy Text
+									Copy content
 								</>
 							)}
 						</Button>
@@ -124,31 +160,31 @@ export function TextSyncArea({
 				</div>
 
 				{/* Quick actions */}
-				{text && (
+				{content && (
 					<div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-						<div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+						<div className="flex items-center gap-2 content-xs content-gray-500 dark:content-gray-400">
 							<span>Quick actions:</span>
 							<Button
 								variant="ghost"
 								size="sm"
-								onClick={() => onTextChange(text.toUpperCase())}
-								className="h-6 px-2 text-xs"
+								onClick={() => handleTextChange(content.toUpperCase())}
+								className="h-6 px-2 content-xs"
 							>
 								UPPERCASE
 							</Button>
 							<Button
 								variant="ghost"
 								size="sm"
-								onClick={() => onTextChange(text.toLowerCase())}
-								className="h-6 px-2 text-xs"
+								onClick={() => handleTextChange(content.toLowerCase())}
+								className="h-6 px-2 content-xs"
 							>
 								lowercase
 							</Button>
 							<Button
 								variant="ghost"
 								size="sm"
-								onClick={() => onTextChange(text.trim())}
-								className="h-6 px-2 text-xs"
+								onClick={() => handleTextChange(content.trim())}
+								className="h-6 px-2 content-xs"
 							>
 								Trim
 							</Button>

@@ -1,5 +1,3 @@
-export * from "./auth.schema";
-
 // export your other schemas here
 
 import { relations } from "drizzle-orm";
@@ -7,14 +5,17 @@ import { pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 // --------------------- ROOMS ---------------------
 export const rooms = pgTable("rooms", {
-	id: uuid("id").defaultRandom().primaryKey(),
+	// Use a short 6-character room ID
+	id: varchar("id", { length: 6 }).primaryKey(),
 	name: varchar("name", { length: 255 }).notNull(),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+	updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // --------------------- MESSAGES ---------------------
 export const messages = pgTable("messages", {
 	id: uuid("id").defaultRandom().primaryKey(),
-	roomId: uuid("room_id")
+	roomId: varchar("room_id", { length: 6 })
 		.notNull()
 		.references(() => rooms.id, { onDelete: "cascade" }),
 	title: text("title"),

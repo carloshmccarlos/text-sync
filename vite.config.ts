@@ -5,35 +5,36 @@ import { defineConfig } from "vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  plugins: [
-    tsConfigPaths({
-      projects: ["./tsconfig.json"],
-    }),
-    tailwindcss(),
-    tanstackStart({
-      // https://github.com/TanStack/router/discussions/2863#discussioncomment-13713677
-      customViteReactPlugin: true,
+	plugins: [
+		tsConfigPaths({
+			projects: ["./tsconfig.json"],
+		}),
+		tailwindcss(),
+		tanstackStart({
+			target: "cloudflare-module",
+			// https://github.com/TanStack/router/discussions/2863#discussioncomment-13713677
+			customViteReactPlugin: true,
 
-      tsr: {
-        quoteStyle: "double",
-        semicolons: true,
-      },
+			tsr: {
+				quoteStyle: "double",
+				semicolons: true,
+			},
 
-      // https://tanstack.com/start/latest/docs/framework/react/hosting#deployment
-      // target: "node-server",
-    }),
-    react({
-      // https://react.dev/learn/react-compiler
-      babel: {
-        plugins: [
-          [
-            "babel-plugin-react-compiler",
-            {
-              target: "19",
-            },
-          ],
-        ],
-      },
-    }),
-  ],
+			// https://tanstack.com/start/latest/docs/framework/react/hosting#deployment
+			// target: "node-server",
+		}),
+		react({
+			// https://react.dev/learn/react-compiler
+			babel: {
+				plugins: [
+					[
+						"babel-plugin-react-compiler",
+						{
+							target: "19",
+						},
+					],
+				],
+			},
+		}),
+	],
 });

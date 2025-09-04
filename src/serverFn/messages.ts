@@ -15,14 +15,14 @@ export const listMessages = createServerFn({ method: "GET" }).handler(
 
 // Get messages by room id
 export const getMessagesByRoom = createServerFn({ method: "POST" })
-	.validator(v.object({ roomId: v.string() }))
+	.validator(v.string())
 	.handler(async ({ data }) => {
-		const { roomId } = data;
-
 		const messagesList = await db
 			.select()
 			.from(messages)
-			.where(eq(messages.roomId, roomId));
+			.where(eq(messages.roomId, data));
+
+		console.log(messagesList);
 		return messagesList || [];
 	});
 
@@ -43,7 +43,11 @@ export const getMessage = createServerFn({ method: "POST" })
 export const createMessage = createServerFn({ method: "POST" })
 	.validator(MessageCreateSchema)
 	.handler(async ({ data }) => {
-		const validatedData = data as { roomId: string; title?: string; content?: string };
+		const validatedData = data as {
+			roomId: string;
+			title?: string;
+			content?: string;
+		};
 		const [message] = await db
 			.insert(messages)
 			.values({

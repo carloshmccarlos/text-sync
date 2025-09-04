@@ -21,7 +21,6 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { safeParse } from "~/validation";
 import { JoinRoomSchema } from "~/validation/schema";
 
 export function JoinRoomDialog() {
@@ -38,26 +37,8 @@ export function JoinRoomDialog() {
 		setError("");
 		setIsLoading(true);
 
-		// Validate room code format
-		const validation = safeParse(JoinRoomSchema, {
-			code: roomCode.toUpperCase(),
-		});
-
-		if (!validation.success) {
-			setError("Please enter a valid 6-character room code");
-			setIsLoading(false);
-			return;
-		}
-
 		try {
-			// Simulate API call to check if room exists
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-
 			// Navigate to the sync page with the room code
-			navigate({
-				to: "/text-sync",
-				search: { join: validation.data.code },
-			});
 
 			setIsOpen(false);
 		} catch (err) {
@@ -75,7 +56,7 @@ export function JoinRoomDialog() {
 					className="group  border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-950/50 dark:hover:to-purple-950/50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg"
 				>
 					<Users className="w-4 h-4 mr-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
-					Join a room
+					Join Sync Session
 					<ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
 				</Button>
 			</DialogTrigger>

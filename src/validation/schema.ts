@@ -13,6 +13,13 @@ export const MessageUpdateSchema = v.object({
 	content: v.optional(v.string()),
 });
 
+export const MessageCollectionSchema = v.object({
+	id: v.pipe(v.string(), v.nonEmpty("Message ID is required")),
+	roomId: v.pipe(v.string(), v.nonEmpty("Room ID is required")),
+	title: v.optional(v.pipe(v.string(), v.maxLength(255))),
+	content: v.optional(v.string()),
+});
+
 // Room schemas
 export const RoomCreateSchema = v.object({
 	name: v.pipe(
@@ -41,6 +48,9 @@ export const JoinRoomSchema = v.object({
 		v.string(),
 		v.nonEmpty("Room code is required"),
 		v.length(6, "Room code must be exactly 6 characters"),
-		v.regex(/^[A-Z0-9]+$/, "Room code must contain only uppercase letters and numbers"),
+		v.regex(
+			/^[A-Z0-9]+$/,
+			"Room code must contain only uppercase letters and numbers",
+		),
 	),
 });

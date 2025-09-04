@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+
 import {
 	ArrowRight,
 	Clock,
@@ -13,6 +14,8 @@ import {
 import { JoinRoomDialog } from "~/components/JoinRoomDialog";
 import ThemeToggle from "~/components/ThemeToggle";
 import { Button } from "~/components/ui/button";
+import { createMessage } from "~/serverFn/messages";
+import { createRoom } from "~/serverFn/rooms";
 
 export const Route = createFileRoute("/")({
 	component: Home,
@@ -21,8 +24,15 @@ export const Route = createFileRoute("/")({
 function Home() {
 	const navigate = useNavigate();
 
-	const handleStart = () => {
-		navigate({ to: "/text-sync" });
+	const handleStart = async () => {
+		// 1) Create a new room
+		const name = "New Session";
+		const room = await createRoom({ data: { name } });
+		if (!room?.id) return;
+		// 2) Create an empty message for this room
+		await createMessage({ data: { roomId: room.id } });
+		// 3) Navigate to the text sync page for this room
+		navigate({ to: `/text-sync/${room.id}` });
 	};
 
 	const features = [
@@ -53,7 +63,7 @@ function Home() {
 						<Copy className="w-5 h-5 text-white" />
 					</div>
 					<span className="font-bold text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-						Text Sync
+						PassEverything
 					</span>
 				</div>
 				<ThemeToggle />

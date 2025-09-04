@@ -11,20 +11,20 @@
 import { createServerRootRoute } from "@tanstack/react-start/server";
 
 import { Route as rootRouteImport } from "./routes/__root";
-import { Route as TextSyncRouteRouteImport } from "./routes/text-sync/route";
 import { Route as IndexRouteImport } from "./routes/index";
+import { Route as TextSyncIdRouteImport } from "./routes/text-sync/$id";
 import { ServerRoute as ApiAuthSplatServerRouteImport } from "./routes/api/auth/$";
 
 const rootServerRouteImport = createServerRootRoute();
 
-const TextSyncRouteRoute = TextSyncRouteRouteImport.update({
-  id: "/text-sync",
-  path: "/text-sync",
-  getParentRoute: () => rootRouteImport,
-} as any);
 const IndexRoute = IndexRouteImport.update({
   id: "/",
   path: "/",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const TextSyncIdRoute = TextSyncIdRouteImport.update({
+  id: "/text-sync/$id",
+  path: "/text-sync/$id",
   getParentRoute: () => rootRouteImport,
 } as any);
 const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
@@ -35,28 +35,28 @@ const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
-  "/text-sync": typeof TextSyncRouteRoute;
+  "/text-sync/$id": typeof TextSyncIdRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
-  "/text-sync": typeof TextSyncRouteRoute;
+  "/text-sync/$id": typeof TextSyncIdRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/": typeof IndexRoute;
-  "/text-sync": typeof TextSyncRouteRoute;
+  "/text-sync/$id": typeof TextSyncIdRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/text-sync";
+  fullPaths: "/" | "/text-sync/$id";
   fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/text-sync";
-  id: "__root__" | "/" | "/text-sync";
+  to: "/" | "/text-sync/$id";
+  id: "__root__" | "/" | "/text-sync/$id";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
-  TextSyncRouteRoute: typeof TextSyncRouteRoute;
+  TextSyncIdRoute: typeof TextSyncIdRoute;
 }
 export interface FileServerRoutesByFullPath {
   "/api/auth/$": typeof ApiAuthSplatServerRoute;
@@ -82,18 +82,18 @@ export interface RootServerRouteChildren {
 
 declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    "/text-sync": {
-      id: "/text-sync";
-      path: "/text-sync";
-      fullPath: "/text-sync";
-      preLoaderRoute: typeof TextSyncRouteRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
     "/": {
       id: "/";
       path: "/";
       fullPath: "/";
       preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/text-sync/$id": {
+      id: "/text-sync/$id";
+      path: "/text-sync/$id";
+      fullPath: "/text-sync/$id";
+      preLoaderRoute: typeof TextSyncIdRouteImport;
       parentRoute: typeof rootRouteImport;
     };
   }
@@ -112,7 +112,7 @@ declare module "@tanstack/react-start/server" {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  TextSyncRouteRoute: TextSyncRouteRoute,
+  TextSyncIdRoute: TextSyncIdRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

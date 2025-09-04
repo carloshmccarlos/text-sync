@@ -1,20 +1,43 @@
 import { Copy, Share2, Users } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 
 interface SessionInfoCardProps {
-	roomCode: string;
-	deviceCount?: number;
-	onCopyRoomCode: () => void;
-	onShare: () => void;
+	roomId: string;
 }
 
-export function SessionInfoCard({
-	roomCode,
-	deviceCount = 1,
-	onCopyRoomCode,
-	onShare,
-}: SessionInfoCardProps) {
+export function SessionInfoCard({ roomId }: SessionInfoCardProps) {
+	const handleCopyRoomId = async () => {
+		try {
+			await navigator.clipboard.writeText(roomId);
+			toast.success("Room ID copied to clipboard");
+			// Could add a toast notification here
+		} catch (err) {
+			console.error("Failed to copy room code:", err);
+		}
+	};
+
+	const handleShare = async () => {
+		const shareData = {
+			title: "Join my text sync session",
+			text: `Join my PassEverything sync session with code: ${roomId}`,
+			url: window.location.href,
+		};
+
+		if (navigator.share) {
+			try {
+				await navigator.share(shareData);
+			} catch (err) {
+				console.error("Error sharing:", err);
+			}
+		} else {
+			// Fallback to copying URL
+			await navigator.clipboard.writeText(
+				`${window.location.origin}?join=${roomId}`,
+			);
+		}
+	};
 	return (
 		<div className="mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-xl p-6 border border-white/20 dark:border-gray-700/20">
 			<div className="flex items-center justify-between mb-4">
@@ -26,12 +49,9 @@ export function SessionInfoCard({
 						Share this code with other devices to sync text
 					</p>
 				</div>
-				<div className="flex items-center gap-2">
+				{/*	<div className="flex items-center gap-2">
 					<Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-					<span className="text-sm text-gray-600 dark:text-gray-300">
-						{deviceCount} device{deviceCount !== 1 ? "s" : ""}
-					</span>
-				</div>
+				</div>*/}
 			</div>
 
 			<div className="flex items-center gap-3">
@@ -44,12 +64,12 @@ export function SessionInfoCard({
 					</Label>
 					<div className="mt-1 flex items-center gap-2">
 						<div className="px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg font-mono text-lg tracking-wider text-center min-w-[120px] select-all">
-							{roomCode}
+							{roomId}
 						</div>
 						<Button
 							variant="outline"
 							size="sm"
-							onClick={onCopyRoomCode}
+							onClick={handleCopyRoomId}
 							className="shrink-0 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors"
 							title="Copy session code"
 						>
@@ -58,7 +78,7 @@ export function SessionInfoCard({
 						<Button
 							variant="outline"
 							size="sm"
-							onClick={onShare}
+							onClick={handleShare}
 							className="shrink-0 hover:bg-purple-50 dark:hover:bg-purple-950/50 transition-colors"
 							title="Share session"
 						>
@@ -74,15 +94,16 @@ export function SessionInfoCard({
 					<div className="flex items-center gap-4">
 						<div className="flex items-center gap-2">
 							<div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-							<span className="text-gray-600 dark:text-gray-300">Active Session</span>
+							<span className="text-gray-600 dark:text-gray-300">
+								Active Session
+							</span>
 						</div>
 						<div className="flex items-center gap-2">
 							<div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-							<span className="text-gray-600 dark:text-gray-300">Real-time Sync</span>
+							<span className="text-gray-600 dark:text-gray-300">
+								Real-time Sync
+							</span>
 						</div>
-					</div>
-					<div className="text-gray-500 dark:text-gray-400">
-						Session expires in 24h
 					</div>
 				</div>
 			</div>*/}
