@@ -1,13 +1,16 @@
-import { useLiveQuery } from "@tanstack/react-db";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { MessagesList } from "~/components/MessagesList";
 import { RoomExpiredError } from "~/components/RoomExpiredError";
 import { SessionInfoCard } from "~/components/SessionInfoCard";
 import { TextSyncArea } from "~/components/TextSyncArea";
 import { Button } from "~/components/ui/button";
 import { createMessagesCollection } from "~/lib/collection/messageCollection";
-import { createMessage, updateMessage } from "~/serverFn/messages";
+import {
+	createMessage,
+	getMessagesByRoom,
+	updateMessage,
+} from "~/serverFn/messages";
 import { deleteRoom, getRoom } from "~/serverFn/rooms";
 
 export const Route = createFileRoute("/text-sync/$id")({
@@ -16,6 +19,7 @@ export const Route = createFileRoute("/text-sync/$id")({
 
 		// Validate room exists
 		const room = await getRoom({ data: { id: roomId } });
+		const messages = await getMessagesByRoom({ data: room.id });
 
 		if (!room) {
 			throw redirect({ to: "/" });
@@ -38,6 +42,7 @@ export const Route = createFileRoute("/text-sync/$id")({
 
 		return {
 			room,
+			initMessageId: messages?.[0]?.id,
 			isExpired: false,
 		};
 	},
@@ -47,13 +52,14 @@ export const Route = createFileRoute("/text-sync/$id")({
 });
 
 function TextSyncPage() {
-	const { room, isExpired } = Route.useLoaderData();
+	const { room, isExpired, initMessageId } = Route.useLoaderData();
 
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [isCreatingMessage, setIsCreatingMessage] = useState(false);
+
 	const [selectedMessageId, setSelectedMessageId] = useState<
 		string | undefined
-	>();
+	>(initMessageId);
 
 	const messagesCollection = createMessagesCollection(room.id);
 

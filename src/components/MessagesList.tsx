@@ -1,6 +1,5 @@
 import { useLiveQuery } from "@tanstack/react-db";
 import { MessageSquare, Plus } from "lucide-react";
-import { useEffect } from "react";
 import { MessageListItem } from "~/components/MessageListItem";
 import { Button } from "~/components/ui/button";
 import type { createMessagesCollection } from "~/lib/collection/messageCollection";
