@@ -54,11 +54,11 @@
 
 <div align="center">
 
-| Frontend | Backend | Database | Styling | Tools |
-|----------|---------|----------|---------|-------|
-| ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white) | ![TanStack Start](https://img.shields.io/badge/TanStack-Start-FF6B35?logo=tanstack&logoColor=white) | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?logo=postgresql&logoColor=white) | ![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38B2AC?logo=tailwind-css&logoColor=white) | ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white) |
+| Frontend                                                                                         | Backend | Database | Styling | Tools |
+|--------------------------------------------------------------------------------------------------|---------|----------|---------|-------|
+| ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)                | ![TanStack Start](https://img.shields.io/badge/TanStack-Start-FF6B35?logo=tanstack&logoColor=white) | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?logo=postgresql&logoColor=white) | ![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38B2AC?logo=tailwind-css&logoColor=white) | ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white) |
 | ![React Compiler](https://img.shields.io/badge/React-Compiler-61DAFB?logo=react&logoColor=white) | ![TanStack Router](https://img.shields.io/badge/TanStack-Router-FF6B35?logo=tanstack&logoColor=white) | ![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-C5F74F?logo=drizzle&logoColor=black) | ![shadcn/ui](https://img.shields.io/badge/shadcn-ui-000000?logo=shadcnui&logoColor=white) | ![Vite](https://img.shields.io/badge/Vite-7.0-646CFF?logo=vite&logoColor=white) |
-| ![TanStack Query](https://img.shields.io/badge/TanStack-Query-FF6B35?logo=tanstack&logoColor=white) | ![Better Auth](https://img.shields.io/badge/Better-Auth-4F46E5?logo=auth0&logoColor=white) | ![Electric SQL](https://img.shields.io/badge/Electric-SQL-FFD700?logo=postgresql&logoColor=black) | ![Lucide Icons](https://img.shields.io/badge/Lucide-Icons-F56565?logo=lucide&logoColor=white) | ![Cloudflare](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white) |
+| ![TanStack DB](https://img.shields.io/badge/TanStack-Db-FF6B35?logo=tanstack&logoColor=white)    | ![Better Auth](https://img.shields.io/badge/Better-Auth-4F46E5?logo=auth0&logoColor=white) | ![Electric SQL](https://img.shields.io/badge/Electric-SQL-FFD700?logo=postgresql&logoColor=black) | ![Lucide Icons](https://img.shields.io/badge/Lucide-Icons-F56565?logo=lucide&logoColor=white) | ![Cloudflare](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white) |
 
 </div>
 
@@ -261,15 +261,6 @@ This project is in the public domain via [Unlicense](LICENSE). Feel free to use,
 
 - 🐛 **Bug Reports**: [Open an issue](https://github.com/yourusername/textsync/issues)
 - 💡 **Feature Requests**: [Start a discussion](https://github.com/yourusername/textsync/discussions)
-- 📧 **Email**: support@textsync.dev
-- 💬 **Discord**: [Join our community](https://discord.gg/textsync)
 
 ---
 
-<div align="center">
-
-**Made with ❤️ by the TextSync Team**
-
-[⭐ Star this repo](https://github.com/yourusername/textsync) • [🐦 Follow us on Twitter](https://twitter.com/textsync) • [📧 Subscribe to updates](https://textsync.dev/newsletter)
-
-</div>
