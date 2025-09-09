@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/a11y/useKeyWithClickEvents: <explanation> */
 import { Edit2, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
 
 interface MessageListItemProps {
@@ -25,6 +25,7 @@ export function MessageListItem({
 }: MessageListItemProps) {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editTitle, setEditTitle] = useState(message.title || "");
+	const inputRef = useRef<HTMLInputElement>(null);
 
 	const handleDelete = (e: React.MouseEvent) => {
 		e.stopPropagation(); // Prevent triggering selection
@@ -43,6 +44,13 @@ export function MessageListItem({
 		setIsEditing(true);
 		setEditTitle(message.title || "");
 	};
+
+	// Focus the input when editing starts
+	useEffect(() => {
+		if (isEditing && inputRef.current) {
+			inputRef.current.focus();
+		}
+	}, [isEditing]);
 
 	const handleSaveRename = () => {
 		if (editTitle.trim()) {
@@ -91,6 +99,7 @@ export function MessageListItem({
 						/>
 						{isEditing ? (
 							<input
+								ref={inputRef}
 								type="text"
 								value={editTitle}
 								onChange={(e) => setEditTitle(e.target.value)}
@@ -119,7 +128,7 @@ export function MessageListItem({
 						variant="ghost"
 						size="sm"
 						onClick={handleRename}
-						className="h-7 w-7 p-0 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+						className={`h-7 w-7 p-0 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20`}
 					>
 						<Edit2 className="w-3 h-3" />
 					</Button>
