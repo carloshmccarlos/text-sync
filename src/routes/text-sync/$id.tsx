@@ -138,7 +138,7 @@ function TextSyncPage() {
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900">
-			<div className="max-w-7xl mx-auto p-6 space-y-6">
+			<div className="max-w-7xl mx-auto p-6 pt-20 space-y-6">
 				{/* Info Card at the top */}
 				<SessionInfoCard roomId={room.id} />
 

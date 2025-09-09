@@ -18,7 +18,6 @@ import {
 	Zap,
 } from "lucide-react";
 import { JoinRoomDialog } from "~/components/JoinRoomDialog";
-import ThemeToggle from "~/components/ThemeToggle";
 import { Button } from "~/components/ui/button";
 import { createMessage } from "~/serverFn/messages";
 import { createRoom } from "~/serverFn/rooms";
@@ -144,19 +143,6 @@ function Home() {
 
 	return (
 		<main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900">
-			{/* Header */}
-			<header className="absolute top-0 left-0 right-0 z-10 p-4 flex justify-between items-center">
-				<div className="flex items-center gap-2">
-					<div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-						<Copy className="w-5 h-5 text-white" />
-					</div>
-					<span className="font-bold text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-						TextSync
-					</span>
-				</div>
-				<ThemeToggle />
-			</header>
-
 			{/* Hero Section */}
 			<section
 				className="min-h-screen flex items-center justify-center p-4 pt-16 pb-8"
