@@ -1,0 +1,29 @@
+{
+  "name": "TextSync - Online Clipboard & Cross-Device Text Sync",
+  "short_name": "TextSync",
+  "description": "Instantly sync text and clipboard content across all your devices. Free online clipboard with secure temporary storage.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-US",
+  "dir": "ltr",
+  "categories": ["productivity", "business", "utilities"],
+
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
+}

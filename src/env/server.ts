@@ -6,6 +6,9 @@ export const env = createEnv({
     DATABASE_URL: z.url(),
     VITE_BASE_URL: z.url().default("http://localhost:3000"),
     BETTER_AUTH_SECRET: z.string().min(1),
+    ELECTRIC_SHAPE_URL: z.url(),
+    ELECTRIC_SQL_CLOUD_SOURCE_ID: z.string().optional(),
+    ELECTRIC_SQL_CLOUD_SOURCE_SECRET: z.string().optional(),
 
     // OAuth2 providers, optional, update as needed
     GITHUB_CLIENT_ID: z.string().optional(),

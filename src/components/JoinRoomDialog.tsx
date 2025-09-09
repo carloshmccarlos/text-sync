@@ -21,7 +21,6 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { JoinRoomSchema } from "~/validation/schema";
 
 export function JoinRoomDialog() {
 	const navigate = useNavigate();
@@ -39,6 +38,8 @@ export function JoinRoomDialog() {
 
 		try {
 			// Navigate to the sync page with the room code
+
+			await navigate({ to: `/text-sync/${roomCode}` });
 
 			setIsOpen(false);
 		} catch (err) {

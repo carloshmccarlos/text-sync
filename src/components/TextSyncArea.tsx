@@ -1,197 +1,238 @@
 import { useLiveQuery } from "@tanstack/react-db";
-
 import { Check, Copy, FileText } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
-import { createMessagesCollection } from "~/lib/collection/messageCollection";
-import { Route } from "~/routes/text-sync/$id";
+import type { createMessagesCollection } from "~/lib/collection/messageCollection";
 
-import type { MessagesSelect } from "~/validation/types";
+interface TextSyncAreaProps {
+  messagesCollection: ReturnType<typeof createMessagesCollection>;
+  selectedMessageId?: string;
+}
 
-export function TextSyncArea() {
-	const { id: roomId } = Route.useParams();
-	const messagesCollection = createMessagesCollection(roomId);
-	const textareaRef = useRef<HTMLTextAreaElement>(null);
+export function TextSyncArea({
+  messagesCollection,
+  selectedMessageId,
+}: TextSyncAreaProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [copied, setCopied] = useState(false);
 
-	const [copied, setCopied] = useState(false);
+  const { data: messages, isLoading } = useLiveQuery((q) => {
+    return q.from({ messages: messagesCollection }).select(({ messages }) => ({
+      id: messages.id,
+      title: messages.title,
+      content: messages.content,
+      roomId: messages.room_id,
+    }));
+  });
 
-	const messageUpdate = (message: MessagesSelect) => {
-		if (!message?.id) return;
+  // Find the selected message or use the first one if none selected
+  const message = selectedMessageId
+    ? messages?.find((m) => m.id === selectedMessageId)
+    : messages?.[0];
 
-		try {
-			messagesCollection.update(message.id, (draft) => {
-				draft.content = message.content;
-			});
-		} catch (error) {
-			console.warn(
-				"Message not found in collection, skipping update:",
-				message.id,
-			);
-		}
-	};
+  const content = message?.content || "";
 
-	const { data: messages } = useLiveQuery((q) =>
-		q.from({ messagesCollection }),
-	);
+  const messageUpdate = (message: {
+    id: string;
+    content?: string | null;
+    title?: string | null;
+    roomId: string;
+  }) => {
+    if (!message?.id) return;
 
-	const message = messages[0];
+    try {
+      messagesCollection.update(message.id, (draft) => {
+        if (typeof message.content !== "undefined") {
+          draft.content = message.content ?? undefined;
+        }
+        if (typeof message.title !== "undefined") {
+          draft.title = message.title ?? undefined;
+        }
+      });
+    } catch (error) {
+      console.error("Failed to update message:", error);
+      // Item may not be in the local collection yet due to initial sync race; ignore.
+    }
+  };
 
-	const content = message?.content || "";
+  const handleCopyText = async () => {
+    if (content) {
+      try {
+        await navigator.clipboard.writeText(content);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error("Failed to copy content:", err);
+      }
+    }
+  };
 
-	const handleCopyText = async () => {
-		if (content) {
-			try {
-				await navigator.clipboard.writeText(content);
-				setCopied(true);
-				setTimeout(() => setCopied(false), 2000);
-			} catch (err) {
-				console.error("Failed to copy content:", err);
-			}
-		}
-	};
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, []);
 
-	// Auto-resize textarea
-	useEffect(() => {
-		if (textareaRef.current) {
-			textareaRef.current.style.height = "auto";
-			textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-		}
-	}, []);
+  function handleTextChange(value: string): void {
+    // Only update if we have a valid message
+    if (!message?.id) return;
 
-	function handleTextChange(value: string): void {
-		// Only update if we have a valid message
-		if (!message?.id) {
-			console.warn("No message available to update");
-			return;
-		}
+    const newMessage = { ...message, content: value };
+    messageUpdate(newMessage);
+  }
 
-		const newMessage = {
-			...message,
-			content: value,
-		};
-		messageUpdate(newMessage);
-	}
+  function handleTitleChange(value: string): void {
+    // Only update if we have a valid message
+    if (!message?.id) return;
 
-	return (
-		<div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/20 overflow-hidden">
-			{/* Header */}
-			<div className="p-6 border-b border-gray-200 dark:border-gray-700">
-				<div className="flex items-center justify-between">
-					<div>
-						<h3 className="content-lg font-semibold content-gray-900 dark:content-white flex items-center gap-2">
-							<FileText className="w-5 h-5 content-blue-600 dark:content-blue-400" />
-							Synchronized content
-						</h3>
-						<p className="content-gray-600 dark:content-gray-300 content-sm mt-1">
-							Type or paste content here - it will sync across all connected
-							devices
-						</p>
-					</div>
-				</div>
-			</div>
+    const newMessage = { ...message, title: value };
+    messageUpdate(newMessage);
+  }
 
-			{/* content Area */}
-			<div className="p-6">
-				<div className="relative">
-					<textarea
-						ref={textareaRef}
-						value={content}
-						onChange={(e) => handleTextChange(e.target.value)}
-						placeholder="Start typing or paste your content here..."
-						className="w-full min-h-[300px] p-4 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 content-gray-900 dark:content-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 font-mono content-sm leading-relaxed"
-						style={{ height: "auto" }}
-					/>
-				</div>
+  // Show loading state while fetching messages
+  if (isLoading) {
+    return (
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/20 overflow-hidden h-full flex items-center justify-center">
+        <div className="text-center p-12">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-6"></div>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+            Loading content
+          </h3>
+          <p className="text-gray-600 dark:text-gray-300 max-w-sm">
+            Please wait while we load your message content...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-				{/* Footer */}
-				<div className="flex items-center justify-between mt-4">
-					<div className="flex items-center gap-4 content-sm content-gray-500 dark:content-gray-400">
-						<div className="flex items-center gap-2">
-							<span>{content.length} characters</span>
-						</div>
-						<div className="flex items-center gap-2">
-							<span>{content.split("\n").length} lines</span>
-						</div>
-						{content && (
-							<div className="flex items-center gap-2">
-								<span>
-									{
-										content.split(/\s+/).filter((word) => word.length > 0)
-											.length
-									}{" "}
-									words
-								</span>
-							</div>
-						)}
-					</div>
+  // If no message is selected, show a placeholder
+  if (!message) {
+    return (
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/20 overflow-hidden h-full flex items-center justify-center">
+        <div className="text-center p-12">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <FileText className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+            No message selected
+          </h3>
+          <p className="text-gray-600 dark:text-gray-300 max-w-sm">
+            Select a message from the sidebar to start editing, or create a new
+            one to begin collaborating.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-					<div className="flex items-center gap-2">
-						{/* Clear button */}
-						{content && (
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => handleTextChange("")}
-								className="content-gray-600 dark:content-gray-400 hover:content-red-600 dark:hover:content-red-400"
-							>
-								Clear
-							</Button>
-						)}
+  return (
+    <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/20 overflow-hidden h-full flex flex-col">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <FileText className="w-4 h-4 text-white" />
+          </div>
+          <div className="flex-1">
+            <input
+              type="text"
+              value={message?.title || ""}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              placeholder="Message title..."
+              className="text-lg font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 placeholder-gray-500 dark:placeholder-gray-400 w-full"
+            />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Real-time sync across all devices
+            </p>
+          </div>
+        </div>
+      </div>
 
-						{/* Copy button */}
-						<Button
-							onClick={handleCopyText}
-							disabled={!content}
-							className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 content-white transition-all duration-200 transform hover:scale-105"
-						>
-							{copied ? (
-								<>
-									<Check className="w-4 h-4 mr-2" />
-									Copied!
-								</>
-							) : (
-								<>
-									<Copy className="w-4 h-4 mr-2" />
-									Copy content
-								</>
-							)}
-						</Button>
-					</div>
-				</div>
+      {/* Content Area */}
+      <div className="flex-1 p-6 flex flex-col min-h-0">
+        <div className="flex-1 relative">
+          <textarea
+            ref={textareaRef}
+            value={content}
+            onChange={(e) => handleTextChange(e.target.value)}
+            placeholder="Start typing or paste your content here..."
+            disabled={!message}
+            className="w-full h-full p-4 border-0 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0 focus:outline-none resize-none font-mono text-sm leading-relaxed"
+          />
+        </div>
 
-				{/* Quick actions */}
-				{content && (
-					<div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-						<div className="flex items-center gap-2 content-xs content-gray-500 dark:content-gray-400">
-							<span>Quick actions:</span>
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => handleTextChange(content.toUpperCase())}
-								className="h-6 px-2 content-xs"
-							>
-								UPPERCASE
-							</Button>
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => handleTextChange(content.toLowerCase())}
-								className="h-6 px-2 content-xs"
-							>
-								lowercase
-							</Button>
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => handleTextChange(content.trim())}
-								className="h-6 px-2 content-xs"
-							>
-								Trim
-							</Button>
-						</div>
-					</div>
-				)}
-			</div>
-		</div>
-	);
+        {/* Footer Actions */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+          {/* Quick actions */}
+          <div className="flex items-center gap-2">
+            {content && (
+              <>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Quick:
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleTextChange(content.toUpperCase())}
+                  className="h-7 px-2 text-xs hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                >
+                  UPPER
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleTextChange(content.toLowerCase())}
+                  className="h-7 px-2 text-xs hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                >
+                  lower
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleTextChange(content.trim())}
+                  className="h-7 px-2 text-xs hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                >
+                  Trim
+                </Button>
+              </>
+            )}
+          </div>
+
+          {/* Main actions */}
+          <div className="flex items-center gap-3">
+            {content && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleTextChange("")}
+                className="text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-700"
+              >
+                Clear
+              </Button>
+            )}
+            <Button
+              onClick={handleCopyText}
+              disabled={!content}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 mr-2" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copy Text
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

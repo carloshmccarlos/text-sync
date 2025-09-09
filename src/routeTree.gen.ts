@@ -13,6 +13,12 @@ import { createServerRootRoute } from "@tanstack/react-start/server";
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as IndexRouteImport } from "./routes/index";
 import { Route as TextSyncIdRouteImport } from "./routes/text-sync/$id";
+import { Route as SitemapXmlRouteImport } from "./routes/sitemap.xml";
+import { Route as RobotsTxtRouteImport } from "./routes/robots.txt";
+import { ServerRoute as ApiMessagesServerRouteImport } from "./routes/api/messages";
+import { ServerRoute as IconsIcon512PngServerRouteImport } from "./routes/icons/icon-512.png";
+import { ServerRoute as IconsIcon192PngServerRouteImport } from "./routes/icons/icon-192.png";
+import { ServerRoute as IconsAppleTouchIconPngServerRouteImport } from "./routes/icons/apple-touch-icon.png";
 import { ServerRoute as ApiAuthSplatServerRouteImport } from "./routes/api/auth/$";
 
 const rootServerRouteImport = createServerRootRoute();
@@ -27,6 +33,37 @@ const TextSyncIdRoute = TextSyncIdRouteImport.update({
   path: "/text-sync/$id",
   getParentRoute: () => rootRouteImport,
 } as any);
+const SitemapXmlRoute = SitemapXmlRouteImport.update({
+  id: "/sitemap/xml",
+  path: "/sitemap/xml",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const RobotsTxtRoute = RobotsTxtRouteImport.update({
+  id: "/robots/txt",
+  path: "/robots/txt",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const ApiMessagesServerRoute = ApiMessagesServerRouteImport.update({
+  id: "/api/messages",
+  path: "/api/messages",
+  getParentRoute: () => rootServerRouteImport,
+} as any);
+const IconsIcon512PngServerRoute = IconsIcon512PngServerRouteImport.update({
+  id: "/icons/icon-512/png",
+  path: "/icons/icon-512/png",
+  getParentRoute: () => rootServerRouteImport,
+} as any);
+const IconsIcon192PngServerRoute = IconsIcon192PngServerRouteImport.update({
+  id: "/icons/icon-192/png",
+  path: "/icons/icon-192/png",
+  getParentRoute: () => rootServerRouteImport,
+} as any);
+const IconsAppleTouchIconPngServerRoute =
+  IconsAppleTouchIconPngServerRouteImport.update({
+    id: "/icons/apple-touch-icon/png",
+    path: "/icons/apple-touch-icon/png",
+    getParentRoute: () => rootServerRouteImport,
+  } as any);
 const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
   id: "/api/auth/$",
   path: "/api/auth/$",
@@ -35,49 +72,89 @@ const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
+  "/robots/txt": typeof RobotsTxtRoute;
+  "/sitemap/xml": typeof SitemapXmlRoute;
   "/text-sync/$id": typeof TextSyncIdRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
+  "/robots/txt": typeof RobotsTxtRoute;
+  "/sitemap/xml": typeof SitemapXmlRoute;
   "/text-sync/$id": typeof TextSyncIdRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
   "/": typeof IndexRoute;
+  "/robots/txt": typeof RobotsTxtRoute;
+  "/sitemap/xml": typeof SitemapXmlRoute;
   "/text-sync/$id": typeof TextSyncIdRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/text-sync/$id";
+  fullPaths: "/" | "/robots/txt" | "/sitemap/xml" | "/text-sync/$id";
   fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/text-sync/$id";
-  id: "__root__" | "/" | "/text-sync/$id";
+  to: "/" | "/robots/txt" | "/sitemap/xml" | "/text-sync/$id";
+  id: "__root__" | "/" | "/robots/txt" | "/sitemap/xml" | "/text-sync/$id";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
+  RobotsTxtRoute: typeof RobotsTxtRoute;
+  SitemapXmlRoute: typeof SitemapXmlRoute;
   TextSyncIdRoute: typeof TextSyncIdRoute;
 }
 export interface FileServerRoutesByFullPath {
+  "/api/messages": typeof ApiMessagesServerRoute;
   "/api/auth/$": typeof ApiAuthSplatServerRoute;
+  "/icons/apple-touch-icon/png": typeof IconsAppleTouchIconPngServerRoute;
+  "/icons/icon-192/png": typeof IconsIcon192PngServerRoute;
+  "/icons/icon-512/png": typeof IconsIcon512PngServerRoute;
 }
 export interface FileServerRoutesByTo {
+  "/api/messages": typeof ApiMessagesServerRoute;
   "/api/auth/$": typeof ApiAuthSplatServerRoute;
+  "/icons/apple-touch-icon/png": typeof IconsAppleTouchIconPngServerRoute;
+  "/icons/icon-192/png": typeof IconsIcon192PngServerRoute;
+  "/icons/icon-512/png": typeof IconsIcon512PngServerRoute;
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport;
+  "/api/messages": typeof ApiMessagesServerRoute;
   "/api/auth/$": typeof ApiAuthSplatServerRoute;
+  "/icons/apple-touch-icon/png": typeof IconsAppleTouchIconPngServerRoute;
+  "/icons/icon-192/png": typeof IconsIcon192PngServerRoute;
+  "/icons/icon-512/png": typeof IconsIcon512PngServerRoute;
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath;
-  fullPaths: "/api/auth/$";
+  fullPaths:
+    | "/api/messages"
+    | "/api/auth/$"
+    | "/icons/apple-touch-icon/png"
+    | "/icons/icon-192/png"
+    | "/icons/icon-512/png";
   fileServerRoutesByTo: FileServerRoutesByTo;
-  to: "/api/auth/$";
-  id: "__root__" | "/api/auth/$";
+  to:
+    | "/api/messages"
+    | "/api/auth/$"
+    | "/icons/apple-touch-icon/png"
+    | "/icons/icon-192/png"
+    | "/icons/icon-512/png";
+  id:
+    | "__root__"
+    | "/api/messages"
+    | "/api/auth/$"
+    | "/icons/apple-touch-icon/png"
+    | "/icons/icon-192/png"
+    | "/icons/icon-512/png";
   fileServerRoutesById: FileServerRoutesById;
 }
 export interface RootServerRouteChildren {
+  ApiMessagesServerRoute: typeof ApiMessagesServerRoute;
   ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute;
+  IconsAppleTouchIconPngServerRoute: typeof IconsAppleTouchIconPngServerRoute;
+  IconsIcon192PngServerRoute: typeof IconsIcon192PngServerRoute;
+  IconsIcon512PngServerRoute: typeof IconsIcon512PngServerRoute;
 }
 
 declare module "@tanstack/react-router" {
@@ -96,10 +173,52 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof TextSyncIdRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    "/sitemap/xml": {
+      id: "/sitemap/xml";
+      path: "/sitemap/xml";
+      fullPath: "/sitemap/xml";
+      preLoaderRoute: typeof SitemapXmlRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/robots/txt": {
+      id: "/robots/txt";
+      path: "/robots/txt";
+      fullPath: "/robots/txt";
+      preLoaderRoute: typeof RobotsTxtRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 declare module "@tanstack/react-start/server" {
   interface ServerFileRoutesByPath {
+    "/api/messages": {
+      id: "/api/messages";
+      path: "/api/messages";
+      fullPath: "/api/messages";
+      preLoaderRoute: typeof ApiMessagesServerRouteImport;
+      parentRoute: typeof rootServerRouteImport;
+    };
+    "/icons/icon-512/png": {
+      id: "/icons/icon-512/png";
+      path: "/icons/icon-512/png";
+      fullPath: "/icons/icon-512/png";
+      preLoaderRoute: typeof IconsIcon512PngServerRouteImport;
+      parentRoute: typeof rootServerRouteImport;
+    };
+    "/icons/icon-192/png": {
+      id: "/icons/icon-192/png";
+      path: "/icons/icon-192/png";
+      fullPath: "/icons/icon-192/png";
+      preLoaderRoute: typeof IconsIcon192PngServerRouteImport;
+      parentRoute: typeof rootServerRouteImport;
+    };
+    "/icons/apple-touch-icon/png": {
+      id: "/icons/apple-touch-icon/png";
+      path: "/icons/apple-touch-icon/png";
+      fullPath: "/icons/apple-touch-icon/png";
+      preLoaderRoute: typeof IconsAppleTouchIconPngServerRouteImport;
+      parentRoute: typeof rootServerRouteImport;
+    };
     "/api/auth/$": {
       id: "/api/auth/$";
       path: "/api/auth/$";
@@ -112,13 +231,19 @@ declare module "@tanstack/react-start/server" {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  RobotsTxtRoute: RobotsTxtRoute,
+  SitemapXmlRoute: SitemapXmlRoute,
   TextSyncIdRoute: TextSyncIdRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>();
 const rootServerRouteChildren: RootServerRouteChildren = {
+  ApiMessagesServerRoute: ApiMessagesServerRoute,
   ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
+  IconsAppleTouchIconPngServerRoute: IconsAppleTouchIconPngServerRoute,
+  IconsIcon192PngServerRoute: IconsIcon192PngServerRoute,
+  IconsIcon512PngServerRoute: IconsIcon512PngServerRoute,
 };
 export const serverRouteTree = rootServerRouteImport
   ._addFileChildren(rootServerRouteChildren)

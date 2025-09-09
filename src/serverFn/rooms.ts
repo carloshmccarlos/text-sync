@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
-import { eq } from "drizzle-orm";
+import { eq, lt } from "drizzle-orm";
 import * as v from "valibot";
 import { db } from "~/lib/db";
-import { rooms } from "~/lib/db/schema/schema";
+import { rooms, messages } from "~/lib/db/schema/schema";
 import { RoomCreateSchema, RoomUpdateSchema } from "~/validation/schema";
 
 // List all rooms
@@ -28,19 +28,31 @@ export const createRoom = createServerFn({ method: "POST" })
 				{ length: 6 },
 				() => alphabet[Math.floor(Math.random() * alphabet.length)],
 			).join("");
-		let id = makeId();
+		
 		let attempts = 0;
-		while (attempts < 5) {
-			const [existing] = await db.select().from(rooms).where(eq(rooms.id, id));
-			if (!existing) break;
-			id = makeId();
-			attempts += 1;
+		const maxAttempts = 5;
+		
+		while (attempts < maxAttempts) {
+			const id = makeId();
+			try {
+				const [created] = await db
+					.insert(rooms)
+					.values({ id, name: data.name })
+					.returning();
+				return created;
+			} catch (error) {
+				// If it's a unique constraint violation, try again with a new ID
+				if (error instanceof Error && error.message.includes('UNIQUE constraint failed')) {
+					attempts++;
+					continue;
+				}
+				// For other errors, rethrow
+				throw error;
+			}
 		}
-		const [created] = await db
-			.insert(rooms)
-			.values({ id, name: data.name })
-			.returning();
-		return created;
+		
+		// If we've exhausted all attempts, throw an error
+		throw new Error(`Failed to create room after ${maxAttempts} attempts`);
 	});
 
 // Update a room
@@ -86,4 +98,34 @@ export const deleteRoom = createServerFn({ method: "POST" })
 			.where(eq(rooms.id, data.id))
 			.returning();
 		return deleted ?? null;
+	});
+
+// Delete rooms older than 24 hours
+export const deleteExpiredRooms = createServerFn({ method: "POST" })
+	.handler(async () => {
+		const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+		
+		// First, get the rooms that will be deleted for logging
+		const expiredRooms = await db
+			.select({ id: rooms.id, name: rooms.name, createdAt: rooms.createdAt })
+			.from(rooms)
+			.where(lt(rooms.createdAt, twentyFourHoursAgo));
+		
+		if (expiredRooms.length === 0) {
+			console.log('No expired rooms found');
+			return { deletedCount: 0, deletedRooms: [] };
+		}
+		
+		// Delete the expired rooms (messages will be deleted automatically due to cascade)
+		const deletedRooms = await db
+			.delete(rooms)
+			.where(lt(rooms.createdAt, twentyFourHoursAgo))
+			.returning();
+		
+		console.log(`Deleted ${deletedRooms.length} expired rooms:`, deletedRooms.map(r => ({ id: r.id, name: r.name })));
+		
+		return {
+			deletedCount: deletedRooms.length,
+			deletedRooms: deletedRooms.map(r => ({ id: r.id, name: r.name, createdAt: r.createdAt }))
+		};
 	});

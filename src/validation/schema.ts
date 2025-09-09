@@ -15,7 +15,7 @@ export const MessageUpdateSchema = v.object({
 
 export const MessageCollectionSchema = v.object({
 	id: v.pipe(v.string(), v.nonEmpty("Message ID is required")),
-	roomId: v.pipe(v.string(), v.nonEmpty("Room ID is required")),
+	room_id: v.pipe(v.string(), v.nonEmpty("Room ID is required")),
 	title: v.optional(v.pipe(v.string(), v.maxLength(255))),
 	content: v.optional(v.string()),
 });
@@ -40,6 +40,17 @@ export const RoomUpdateSchema = v.object({
 			v.trim(),
 		),
 	),
+});
+
+export const RoomCollectionSchema = v.object({
+	id: v.pipe(v.string(), v.nonEmpty("Room ID is required")),
+	name: v.pipe(
+		v.string(),
+		v.nonEmpty("Room name is required"),
+		v.maxLength(255, "Room name must be less than 255 characters"),
+	),
+	createdAt: v.date(),
+	updatedAt: v.date(),
 });
 
 // Join room schema

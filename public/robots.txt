@@ -1,0 +1,14 @@
+# Allow all crawling
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /text-sync/*/delete
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: /sitemap.xml
+
+# TextSync - Real-time Cross-Device Clipboard
+# https://www.robotstxt.org/robotstxt.html)

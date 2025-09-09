@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import * as v from "valibot";
 import { db } from "~/lib/db";
 import { messages } from "~/lib/db/schema/schema";
@@ -22,7 +22,6 @@ export const getMessagesByRoom = createServerFn({ method: "POST" })
 			.from(messages)
 			.where(eq(messages.roomId, data));
 
-		console.log(messagesList);
 		return messagesList || [];
 	});
 
@@ -43,17 +42,12 @@ export const getMessage = createServerFn({ method: "POST" })
 export const createMessage = createServerFn({ method: "POST" })
 	.validator(MessageCreateSchema)
 	.handler(async ({ data }) => {
-		const validatedData = data as {
-			roomId: string;
-			title?: string;
-			content?: string;
-		};
 		const [message] = await db
 			.insert(messages)
 			.values({
-				roomId: validatedData.roomId,
-				title: validatedData.title ?? null,
-				content: validatedData.content ?? null,
+				roomId: data.roomId,
+				title: "Message",
+				content: "",
 			})
 			.returning();
 		return message;
@@ -77,7 +71,12 @@ export const updateMessage = createServerFn({ method: "POST" })
 			.update(messages)
 			.set(updateValues)
 			.where(eq(messages.id, id))
-			.returning();
+			.returning({
+				id: messages.id,
+				title: messages.title,
+				content: messages.content,
+				txid: sql<string>`txid_current()::text`,
+			});
 
 		return updated ?? null;
 	});
