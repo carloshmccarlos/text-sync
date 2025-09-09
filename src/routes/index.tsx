@@ -124,7 +124,7 @@ function Home() {
 			title: "Instant Sync",
 			description:
 				"Changes appear immediately on all connected devices. No refresh needed - everything updates in real-time.",
-			highlight: "< 100ms sync speed",
+			highlight: "< 500ms sync speed",
 		},
 		{
 			icon: Users,
