@@ -1,5 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { MessagesList } from "~/components/MessagesList";
 import { RoomExpiredError } from "~/components/RoomExpiredError";
 import { SessionInfoCard } from "~/components/SessionInfoCard";
@@ -53,6 +54,7 @@ export const Route = createFileRoute("/text-sync/$id")({
 
 function TextSyncPage() {
 	const { room, isExpired, initMessageId } = Route.useLoaderData();
+	const { t } = useTranslation();
 
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [isCreatingMessage, setIsCreatingMessage] = useState(false);
@@ -73,7 +75,7 @@ function TextSyncPage() {
 			const newMessage = await createMessage({
 				data: {
 					roomId: room.id,
-					title: "New Message",
+					title: t("messages.newMessage"),
 					content: "",
 				},
 			});
@@ -84,7 +86,7 @@ function TextSyncPage() {
 			}
 		} catch (error) {
 			console.error("Failed to create message:", error);
-			alert("Failed to create message. Please try again.");
+			alert(t("messages.failedToCreate"));
 		} finally {
 			setIsCreatingMessage(false);
 		}
@@ -111,16 +113,12 @@ function TextSyncPage() {
 			});
 		} catch (error) {
 			console.error("Failed to rename message:", error);
-			alert("Failed to rename message. Please try again.");
+			alert(t("messages.failedToRename"));
 		}
 	};
 
 	const handleDeleteRoom = async () => {
-		if (
-			!confirm(
-				`Are you sure you want to delete room "${room.name}"? This action cannot be undone.`,
-			)
-		) {
+		if (!confirm(t("session.deleteRoomConfirm", { roomName: room.name }))) {
 			return;
 		}
 
@@ -131,7 +129,7 @@ function TextSyncPage() {
 			window.location.href = "/";
 		} catch (error) {
 			console.error("Failed to delete room:", error);
-			alert("Failed to delete room. Please try again.");
+			alert(t("session.failedToDelete"));
 			setIsDeleting(false);
 		}
 	};
@@ -195,7 +193,7 @@ function TextSyncPage() {
 										d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
 									></path>
 								</svg>
-								Deleting...
+								{t("session.deleting")}
 							</>
 						) : (
 							<>
@@ -213,7 +211,7 @@ function TextSyncPage() {
 										d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
 									/>
 								</svg>
-								Delete Room
+								{t("session.deleteRoom")}
 							</>
 						)}
 					</Button>

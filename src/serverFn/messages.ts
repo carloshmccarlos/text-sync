@@ -46,7 +46,7 @@ export const createMessage = createServerFn({ method: "POST" })
 			.insert(messages)
 			.values({
 				roomId: data.roomId,
-				title: "Message",
+				title: data.title,
 				content: "",
 			})
 			.returning();

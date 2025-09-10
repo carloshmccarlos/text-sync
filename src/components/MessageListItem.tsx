@@ -1,6 +1,7 @@
 /** biome-ignore-all lint/a11y/useKeyWithClickEvents: <explanation> */
 import { Edit2, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "~/components/ui/button";
 
 interface MessageListItemProps {
@@ -26,15 +27,12 @@ export function MessageListItem({
 	const [isEditing, setIsEditing] = useState(false);
 	const [editTitle, setEditTitle] = useState(message.title || "");
 	const inputRef = useRef<HTMLInputElement>(null);
+	const { t } = useTranslation();
 
 	const handleDelete = (e: React.MouseEvent) => {
 		e.stopPropagation(); // Prevent triggering selection
 
-		if (
-			confirm(
-				"Are you sure you want to delete this message? This action cannot be undone.",
-			)
-		) {
+		if (confirm(t('messages.deleteConfirm'))) {
 			onDelete(message.id);
 		}
 	};
@@ -72,11 +70,11 @@ export function MessageListItem({
 		}
 	};
 
-	const displayTitle = message.title || "Untitled Message";
+	const displayTitle = message.title || t('messages.untitledMessage');
 	const contentPreview = message.content
 		? message.content.slice(0, 100) +
 			(message.content.length > 100 ? "..." : "")
-		: "No content";
+		: t('messages.noContent');
 
 	return (
 		// biome-ignore lint/a11y/noStaticElementInteractions: <explanation>

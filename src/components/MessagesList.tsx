@@ -1,5 +1,6 @@
 import { useLiveQuery } from "@tanstack/react-db";
 import { MessageSquare, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { MessageListItem } from "~/components/MessageListItem";
 import { Button } from "~/components/ui/button";
 import type { createMessagesCollection } from "~/lib/collection/messageCollection";
@@ -22,6 +23,8 @@ export function MessagesList({
 	isCreatingMessage = false,
 	messagesCollection,
 }: MessagesListProps) {
+	const { t } = useTranslation();
+
 	const { data: messages, isLoading } = useLiveQuery((q) => {
 		return q.from({ messages: messagesCollection }).select(({ messages }) => ({
 			id: messages.id,
@@ -47,7 +50,7 @@ export function MessagesList({
 			}
 		} catch (error) {
 			console.error("Failed to delete message:", error);
-			alert("Failed to delete message. Please try again.");
+			alert(t("messagesList.failedToDelete"));
 		}
 	};
 
@@ -63,10 +66,10 @@ export function MessagesList({
 						</div>
 						<div>
 							<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-								Messages
+								{t("messagesList.messages")}
 							</h3>
 							<p className="text-xs text-gray-500 dark:text-gray-400">
-								Loading...
+								{t("messagesList.loading")}
 							</p>
 						</div>
 					</div>
@@ -77,10 +80,10 @@ export function MessagesList({
 					<div className="text-center">
 						<div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
 						<h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-							Loading messages
+							{t("messagesList.loadingMessages")}
 						</h4>
 						<p className="text-sm text-gray-600 dark:text-gray-300">
-							Please wait while we fetch your messages...
+							{t("messagesList.loadingDescription")}
 						</p>
 					</div>
 				</div>
@@ -100,10 +103,10 @@ export function MessagesList({
 						</div>
 						<div>
 							<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-								Messages
+								{t("messagesList.messages")}
 							</h3>
 							<p className="text-xs text-gray-500 dark:text-gray-400">
-								No messages yet
+								{t("messagesList.noMessagesYet")}
 							</p>
 						</div>
 					</div>
@@ -115,12 +118,12 @@ export function MessagesList({
 						{isCreatingMessage ? (
 							<>
 								<div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-								Creating...
+								{t("messagesList.creating")}
 							</>
 						) : (
 							<>
 								<Plus className="w-4 h-4 mr-2" />
-								Create First Message
+								{t("messagesList.createFirstMessageButton")}
 							</>
 						)}
 					</Button>
@@ -133,10 +136,10 @@ export function MessagesList({
 							<MessageSquare className="w-8 h-8 text-blue-600 dark:text-blue-400" />
 						</div>
 						<h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-							Start collaborating
+							{t("messagesList.startCollaborating")}
 						</h4>
 						<p className="text-sm text-gray-600 dark:text-gray-300 max-w-xs">
-							Create your first message to begin sharing content across devices.
+							{t("messagesList.createFirstMessage")}
 						</p>
 					</div>
 				</div>
@@ -154,10 +157,10 @@ export function MessagesList({
 					</div>
 					<div>
 						<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-							Messages
+							{t("messagesList.messages")}
 						</h3>
 						<p className="text-xs text-gray-500 dark:text-gray-400">
-							{messages.length} {messages.length === 1 ? "message" : "messages"}
+							{t("messagesList.messageCount", { count: messages.length })}
 						</p>
 					</div>
 				</div>
@@ -169,12 +172,12 @@ export function MessagesList({
 					{isCreatingMessage ? (
 						<>
 							<div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-							Creating...
+							{t("messagesList.creating")}
 						</>
 					) : (
 						<>
 							<Plus className="w-4 h-4 mr-2" />
-							New Message
+							{t("messagesList.newMessage")}
 						</>
 					)}
 				</Button>

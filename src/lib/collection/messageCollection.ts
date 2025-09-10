@@ -5,6 +5,7 @@ import { MessageCollectionSchema } from "~/validation/schema";
 
 export const createMessagesCollection = (roomId: string) => {
 	return createCollection(
+		// @ts-expect-error
 		electricCollectionOptions({
 			id: "messages",
 			schema: MessageCollectionSchema,

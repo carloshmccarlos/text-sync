@@ -1,6 +1,7 @@
 import { useLiveQuery } from "@tanstack/react-db";
 import { Check, Copy, FileText } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "~/components/ui/button";
 import type { createMessagesCollection } from "~/lib/collection/messageCollection";
 
@@ -13,6 +14,7 @@ export function TextSyncArea({
 	messagesCollection,
 	selectedMessageId,
 }: TextSyncAreaProps) {
+	const { t } = useTranslation();
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const [copied, setCopied] = useState(false);
 
@@ -98,10 +100,10 @@ export function TextSyncArea({
 				<div className="text-center p-12">
 					<div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-6"></div>
 					<h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-						Loading content
+						{t("textSync.loadingContent")}
 					</h3>
 					<p className="text-gray-600 dark:text-gray-300 max-w-sm">
-						Please wait while we load your message content...
+						{t("textSync.loadingMessage")}
 					</p>
 				</div>
 			</div>
@@ -117,11 +119,10 @@ export function TextSyncArea({
 						<FileText className="w-10 h-10 text-blue-600 dark:text-blue-400" />
 					</div>
 					<h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-						No message selected
+						{t("textSync.noMessageSelected")}
 					</h3>
 					<p className="text-gray-600 dark:text-gray-300 max-w-sm">
-						Select a message from the sidebar to start editing, or create a new
-						one to begin collaborating.
+						{t("textSync.noMessageDescription")}
 					</p>
 				</div>
 			</div>
@@ -141,11 +142,11 @@ export function TextSyncArea({
 							type="text"
 							value={message?.title || ""}
 							onChange={(e) => handleTitleChange(e.target.value)}
-							placeholder="Message title..."
+							placeholder={t("textSync.messageTitlePlaceholder")}
 							className="text-lg font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 placeholder-gray-500 dark:placeholder-gray-400 w-full"
 						/>
 						<p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-							Real-time sync across all devices
+							{t("textSync.realTimeSync")}
 						</p>
 					</div>
 				</div>
@@ -158,7 +159,7 @@ export function TextSyncArea({
 						ref={textareaRef}
 						value={content}
 						onChange={(e) => handleTextChange(e.target.value)}
-						placeholder="Start typing or paste your content here..."
+						placeholder={t("textSync.typeHere")}
 						disabled={!message}
 						className="w-full h-full p-4 border-0 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0 focus:outline-none resize-none font-mono text-sm leading-relaxed"
 					/>
@@ -171,7 +172,7 @@ export function TextSyncArea({
 						{content && (
 							<>
 								<span className="text-xs text-gray-500 dark:text-gray-400">
-									Quick:
+									{t("textSync.quick")}
 								</span>
 								<Button
 									variant="ghost"
@@ -179,7 +180,7 @@ export function TextSyncArea({
 									onClick={() => handleTextChange(content.toUpperCase())}
 									className="h-7 px-2 text-xs hover:bg-blue-50 dark:hover:bg-blue-900/20"
 								>
-									UPPER
+									{t("textSync.uppercase")}
 								</Button>
 								<Button
 									variant="ghost"
@@ -187,7 +188,7 @@ export function TextSyncArea({
 									onClick={() => handleTextChange(content.toLowerCase())}
 									className="h-7 px-2 text-xs hover:bg-blue-50 dark:hover:bg-blue-900/20"
 								>
-									lower
+									{t("textSync.lowercase")}
 								</Button>
 								<Button
 									variant="ghost"
@@ -195,7 +196,7 @@ export function TextSyncArea({
 									onClick={() => handleTextChange(content.trim())}
 									className="h-7 px-2 text-xs hover:bg-blue-50 dark:hover:bg-blue-900/20"
 								>
-									Trim
+									{t("textSync.trim")}
 								</Button>
 							</>
 						)}
@@ -210,7 +211,7 @@ export function TextSyncArea({
 								onClick={() => handleTextChange("")}
 								className="text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-700"
 							>
-								Clear
+								{t("textSync.clear")}
 							</Button>
 						)}
 						<Button
@@ -221,12 +222,12 @@ export function TextSyncArea({
 							{copied ? (
 								<>
 									<Check className="w-4 h-4 mr-2" />
-									Copied!
+									{t("textSync.copied")}
 								</>
 							) : (
 								<>
 									<Copy className="w-4 h-4 mr-2" />
-									Copy Text
+									{t("textSync.copyText")}
 								</>
 							)}
 						</Button>

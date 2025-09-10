@@ -8,6 +8,7 @@ import {
 	Users,
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "~/components/ui/button";
 import {
 	Dialog,
@@ -24,6 +25,7 @@ import { Label } from "~/components/ui/label";
 
 export function JoinRoomDialog() {
 	const navigate = useNavigate();
+	const { t } = useTranslation();
 	const [roomCode, setRoomCode] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
@@ -43,7 +45,7 @@ export function JoinRoomDialog() {
 
 			setIsOpen(false);
 		} catch (err) {
-			setError("Failed to join session. Please try again.");
+			setError(t("joinRoom.failedToJoin"));
 		} finally {
 			setIsLoading(false);
 		}
@@ -57,7 +59,7 @@ export function JoinRoomDialog() {
 					className="group  border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-950/50 dark:hover:to-purple-950/50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg"
 				>
 					<Users className="w-4 h-4 mr-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
-					Join Sync Session
+					{t('home.joinRoom')}
 					<ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
 				</Button>
 			</DialogTrigger>
@@ -68,11 +70,10 @@ export function JoinRoomDialog() {
 							<Link2 className="w-8 h-8 text-white" />
 						</div>
 						<DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-							Join Sync Session
+							{t('joinRoom.title')}
 						</DialogTitle>
 						<DialogDescription className="text-base leading-relaxed">
-							Enter the session code to connect with another device and start
-							syncing text in real-time.
+							{t('joinRoom.description')}
 						</DialogDescription>
 					</DialogHeader>
 
@@ -84,12 +85,12 @@ export function JoinRoomDialog() {
 								className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"
 							>
 								<Sparkles className="w-4 h-4 text-blue-500" />
-								Session Code
+								{t('joinRoom.roomCode')}
 							</Label>
 							<div className="relative">
 								<Input
 									name="roomCode"
-									placeholder="ABC123"
+									placeholder={t('joinRoom.placeholder')}
 									value={roomCode}
 									onChange={(e) => {
 										setRoomCode(e.target.value.toUpperCase());
@@ -154,7 +155,7 @@ export function JoinRoomDialog() {
 											d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 										/>
 									</svg>
-									Session codes are exactly 6 characters (letters and numbers)
+									{t("joinRoom.sessionCodeHelper")}
 								</p>
 							</div>
 
@@ -184,7 +185,7 @@ export function JoinRoomDialog() {
 								disabled={isLoading}
 								className="flex-1 h-11"
 							>
-								Cancel
+								{t('joinRoom.cancel')}
 							</Button>
 						</DialogClose>
 						<Button
@@ -195,11 +196,11 @@ export function JoinRoomDialog() {
 							{isLoading ? (
 								<>
 									<Loader2 className="w-4 h-4 mr-2 animate-spin" />
-									Joining...
+									{t('joinRoom.joining')}...
 								</>
 							) : (
 								<>
-									Join Session
+									{t('joinRoom.join')}
 									<ArrowRight className="w-4 h-4 ml-2" />
 								</>
 							)}
