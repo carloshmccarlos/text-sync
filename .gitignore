@@ -23,3 +23,7 @@ dist
 
 .tanstack
 wrangler.jsonc
+.kiro
+.nitro
+.idea
+.vscode

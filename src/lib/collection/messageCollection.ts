@@ -30,8 +30,7 @@ export const createMessagesCollection = (roomId: string) => {
 				};
 				// Persist the change to Postgres via your serverFn and use its txid
 				const result = await updateMessage({ data: updateData });
-				const txid =
-					result && (result as any).txid ? Number((result as any).txid) : 0;
+				const txid = result?.txid ? Number(result.txid) : 0;
 				return { txid };
 			},
 		}),
