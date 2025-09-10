@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { eq, lt } from "drizzle-orm";
 import * as v from "valibot";
 import { db } from "~/lib/db";
-import { rooms, messages } from "~/lib/db/schema/schema";
+import { messages, rooms } from "~/lib/db/schema/schema";
 import { RoomCreateSchema, RoomUpdateSchema } from "~/validation/schema";
 
 // List all rooms
@@ -14,7 +14,11 @@ export const listRooms = createServerFn({ method: "GET" }).handler(async () => {
 export const getRoom = createServerFn({ method: "POST" })
 	.validator(v.object({ id: v.string() }))
 	.handler(async ({ data }) => {
-		const [row] = await db.select().from(rooms).where(eq(rooms.id, data.id));
+		const [row] = await db
+			.select()
+			.from(rooms)
+			.where(eq(rooms.id, data.id))
+			.leftJoin(messages, eq(rooms.id, messages.roomId));
 		return row ?? null;
 	});
 
@@ -28,10 +32,10 @@ export const createRoom = createServerFn({ method: "POST" })
 				{ length: 6 },
 				() => alphabet[Math.floor(Math.random() * alphabet.length)],
 			).join("");
-		
+
 		let attempts = 0;
 		const maxAttempts = 5;
-		
+
 		while (attempts < maxAttempts) {
 			const id = makeId();
 			try {
@@ -42,7 +46,10 @@ export const createRoom = createServerFn({ method: "POST" })
 				return created;
 			} catch (error) {
 				// If it's a unique constraint violation, try again with a new ID
-				if (error instanceof Error && error.message.includes('UNIQUE constraint failed')) {
+				if (
+					error instanceof Error &&
+					error.message.includes("UNIQUE constraint failed")
+				) {
 					attempts++;
 					continue;
 				}
@@ -50,7 +57,7 @@ export const createRoom = createServerFn({ method: "POST" })
 				throw error;
 			}
 		}
-		
+
 		// If we've exhausted all attempts, throw an error
 		throw new Error(`Failed to create room after ${maxAttempts} attempts`);
 	});
@@ -101,31 +108,39 @@ export const deleteRoom = createServerFn({ method: "POST" })
 	});
 
 // Delete rooms older than 24 hours
-export const deleteExpiredRooms = createServerFn({ method: "POST" })
-	.handler(async () => {
+export const deleteExpiredRooms = createServerFn({ method: "POST" }).handler(
+	async () => {
 		const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-		
+
 		// First, get the rooms that will be deleted for logging
 		const expiredRooms = await db
 			.select({ id: rooms.id, name: rooms.name, createdAt: rooms.createdAt })
 			.from(rooms)
 			.where(lt(rooms.createdAt, twentyFourHoursAgo));
-		
+
 		if (expiredRooms.length === 0) {
-			console.log('No expired rooms found');
+			console.log("No expired rooms found");
 			return { deletedCount: 0, deletedRooms: [] };
 		}
-		
+
 		// Delete the expired rooms (messages will be deleted automatically due to cascade)
 		const deletedRooms = await db
 			.delete(rooms)
 			.where(lt(rooms.createdAt, twentyFourHoursAgo))
 			.returning();
-		
-		console.log(`Deleted ${deletedRooms.length} expired rooms:`, deletedRooms.map(r => ({ id: r.id, name: r.name })));
-		
+
+		console.log(
+			`Deleted ${deletedRooms.length} expired rooms:`,
+			deletedRooms.map((r) => ({ id: r.id, name: r.name })),
+		);
+
 		return {
 			deletedCount: deletedRooms.length,
-			deletedRooms: deletedRooms.map(r => ({ id: r.id, name: r.name, createdAt: r.createdAt }))
+			deletedRooms: deletedRooms.map((r) => ({
+				id: r.id,
+				name: r.name,
+				createdAt: r.createdAt,
+			})),
 		};
-	});
+	},
+);

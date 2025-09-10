@@ -5,7 +5,6 @@ import { MessageCollectionSchema } from "~/validation/schema";
 
 export const createMessagesCollection = (roomId: string) => {
 	return createCollection(
-		// @ts-expect-error
 		electricCollectionOptions({
 			id: "messages",
 			schema: MessageCollectionSchema,
@@ -19,9 +18,6 @@ export const createMessagesCollection = (roomId: string) => {
 				).toString(),
 				// Pass roomId so the server can scope the shape with a WHERE clause
 				params: { roomId },
-				onError: (err) => {
-					console.error("Electric shape error (messages):", err);
-				},
 			},
 			getKey: (item) => item.id,
 			onUpdate: async ({ transaction }) => {

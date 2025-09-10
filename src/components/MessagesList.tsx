@@ -1,29 +1,31 @@
 import { useLiveQuery } from "@tanstack/react-db";
 import { MessageSquare, Plus } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MessageListItem } from "~/components/MessageListItem";
 import { Button } from "~/components/ui/button";
 import type { createMessagesCollection } from "~/lib/collection/messageCollection";
-import { deleteMessage } from "~/serverFn/messages";
+import {
+	createMessage,
+	deleteMessage,
+	updateMessage,
+} from "~/serverFn/messages";
 
 interface MessagesListProps {
 	messagesCollection: ReturnType<typeof createMessagesCollection>;
 	selectedMessageId?: string;
 	onSelectMessage: (messageId: string) => void;
-	onCreateMessage: () => void;
-	onRenameMessage: (messageId: string, newTitle: string) => void;
-	isCreatingMessage?: boolean;
+	roomId: string;
 }
 
 export function MessagesList({
 	selectedMessageId,
 	onSelectMessage,
-	onCreateMessage,
-	onRenameMessage,
-	isCreatingMessage = false,
+	roomId,
 	messagesCollection,
 }: MessagesListProps) {
 	const { t } = useTranslation();
+	const [isCreatingMessage, setIsCreatingMessage] = useState(false);
 
 	const { data: messages, isLoading } = useLiveQuery((q) => {
 		return q.from({ messages: messagesCollection }).select(({ messages }) => ({
@@ -33,6 +35,29 @@ export function MessagesList({
 			roomId: messages.room_id,
 		}));
 	});
+
+	const handleCreateMessage = async () => {
+		setIsCreatingMessage(true);
+		try {
+			const newMessage = await createMessage({
+				data: {
+					roomId: roomId,
+					title: t("messages.newMessage"),
+					content: "",
+				},
+			});
+
+			if (newMessage) {
+				// Automatically select the new message for editing
+				onSelectMessage(newMessage.id);
+			}
+		} catch (error) {
+			console.error("Failed to create message:", error);
+			alert(t("messages.failedToCreate"));
+		} finally {
+			setIsCreatingMessage(false);
+		}
+	};
 
 	const handleDeleteMessage = async (messageId: string) => {
 		try {
@@ -51,6 +76,31 @@ export function MessagesList({
 		} catch (error) {
 			console.error("Failed to delete message:", error);
 			alert(t("messagesList.failedToDelete"));
+		}
+	};
+
+	const handleRenameMessage = async (messageId: string, newTitle: string) => {
+		if (!messagesCollection) {
+			console.error("Messages collection not available");
+			return;
+		}
+
+		try {
+			// Update locally first for immediate feedback
+			messagesCollection.update(messageId, (draft) => {
+				draft.title = newTitle;
+			});
+
+			// Then sync to server
+			await updateMessage({
+				data: {
+					id: messageId,
+					title: newTitle,
+				},
+			});
+		} catch (error) {
+			console.error("Failed to rename message:", error);
+			alert(t("messages.failedToRename"));
 		}
 	};
 
@@ -111,7 +161,7 @@ export function MessagesList({
 						</div>
 					</div>
 					<Button
-						onClick={onCreateMessage}
+						onClick={handleCreateMessage}
 						disabled={isCreatingMessage}
 						className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-blue-400 disabled:to-purple-400 text-white shadow-lg hover:shadow-xl transition-all duration-200"
 					>
@@ -165,7 +215,7 @@ export function MessagesList({
 					</div>
 				</div>
 				<Button
-					onClick={onCreateMessage}
+					onClick={handleCreateMessage}
 					disabled={isCreatingMessage}
 					className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-blue-400 disabled:to-purple-400 text-white shadow-lg hover:shadow-xl transition-all duration-200"
 				>
@@ -193,7 +243,7 @@ export function MessagesList({
 							isSelected={selectedMessageId === message.id}
 							onSelect={onSelectMessage}
 							onDelete={handleDeleteMessage}
-							onRename={onRenameMessage}
+							onRename={handleRenameMessage}
 						/>
 					))}
 				</div>

@@ -7,11 +7,7 @@ import { SessionInfoCard } from "~/components/SessionInfoCard";
 import { TextSyncArea } from "~/components/TextSyncArea";
 import { Button } from "~/components/ui/button";
 import { createMessagesCollection } from "~/lib/collection/messageCollection";
-import {
-	createMessage,
-	getMessagesByRoom,
-	updateMessage,
-} from "~/serverFn/messages";
+
 import { deleteRoom, getRoom } from "~/serverFn/rooms";
 
 export const Route = createFileRoute("/text-sync/$id")({
@@ -19,8 +15,7 @@ export const Route = createFileRoute("/text-sync/$id")({
 		const roomId = params.id;
 
 		// Validate room exists
-		const room = await getRoom({ data: { id: roomId } });
-		const messages = await getMessagesByRoom({ data: room.id });
+		const { rooms: room, messages } = await getRoom({ data: { id: roomId } });
 
 		if (!room) {
 			throw redirect({ to: "/" });
@@ -43,7 +38,7 @@ export const Route = createFileRoute("/text-sync/$id")({
 
 		return {
 			room,
-			initMessageId: messages?.[0]?.id,
+			initMessageId: messages?.id,
 			isExpired: false,
 		};
 	},
@@ -57,8 +52,6 @@ function TextSyncPage() {
 	const { t } = useTranslation();
 
 	const [isDeleting, setIsDeleting] = useState(false);
-	const [isCreatingMessage, setIsCreatingMessage] = useState(false);
-
 	const [selectedMessageId, setSelectedMessageId] = useState<
 		string | undefined
 	>(initMessageId);
@@ -68,54 +61,6 @@ function TextSyncPage() {
 	if (isExpired) {
 		return <RoomExpiredError roomId={room.id} />;
 	}
-
-	const handleCreateMessage = async () => {
-		setIsCreatingMessage(true);
-		try {
-			const newMessage = await createMessage({
-				data: {
-					roomId: room.id,
-					title: t("messages.newMessage"),
-					content: "",
-				},
-			});
-
-			if (newMessage) {
-				// Automatically select the new message for editing
-				setSelectedMessageId(newMessage.id);
-			}
-		} catch (error) {
-			console.error("Failed to create message:", error);
-			alert(t("messages.failedToCreate"));
-		} finally {
-			setIsCreatingMessage(false);
-		}
-	};
-
-	const handleRenameMessage = async (messageId: string, newTitle: string) => {
-		if (!messagesCollection) {
-			console.error("Messages collection not available");
-			return;
-		}
-
-		try {
-			// Update locally first for immediate feedback
-			messagesCollection.update(messageId, (draft) => {
-				draft.title = newTitle;
-			});
-
-			// Then sync to server
-			await updateMessage({
-				data: {
-					id: messageId,
-					title: newTitle,
-				},
-			});
-		} catch (error) {
-			console.error("Failed to rename message:", error);
-			alert(t("messages.failedToRename"));
-		}
-	};
 
 	const handleDeleteRoom = async () => {
 		if (!confirm(t("session.deleteRoomConfirm", { roomName: room.name }))) {
@@ -148,9 +93,7 @@ function TextSyncPage() {
 							messagesCollection={messagesCollection}
 							selectedMessageId={selectedMessageId}
 							onSelectMessage={setSelectedMessageId}
-							onCreateMessage={handleCreateMessage}
-							onRenameMessage={handleRenameMessage}
-							isCreatingMessage={isCreatingMessage}
+							roomId={room.id}
 						/>
 					</div>
 
