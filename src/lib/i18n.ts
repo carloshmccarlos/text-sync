@@ -2,6 +2,42 @@ import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 
+// Utility function to detect and convert browser language
+const detectBrowserLanguage = (): string => {
+	if (typeof window === "undefined") {
+		return "en"; // Default for SSR
+	}
+
+	// Check localStorage first
+	const storedLang = localStorage.getItem("i18nextLng");
+	if (storedLang && ["en", "zh"].includes(storedLang)) {
+		return storedLang;
+	}
+
+	// Get browser languages in order of preference
+	const browserLanguages = [
+		navigator.language,
+		...(navigator.languages || []),
+	].filter(Boolean);
+
+	for (const lang of browserLanguages) {
+		const normalizedLang = lang.toLowerCase();
+		
+		// Handle Chinese variants
+		if (normalizedLang.startsWith("zh")) {
+			return "zh";
+		}
+		
+		// Handle English variants
+		if (normalizedLang.startsWith("en")) {
+			return "en";
+		}
+	}
+
+	// Default fallback
+	return "en";
+};
+
 const resources = {
 	en: {
 		translation: {
@@ -95,7 +131,7 @@ const resources = {
 			"session.deleteRoomTitle": "Delete Room",
 			"session.deleting": "Deleting...",
 			"session.deleteRoomConfirm":
-				"Are you sure you want to delete room ? This action cannot be undone.",
+				'Are you sure you want to delete room "{{roomName}}"? This action cannot be undone.',
 			"session.failedToDelete": "Failed to delete room. Please try again.",
 			"session.newSession": "New Session",
 
@@ -382,37 +418,94 @@ i18n
 		react: {
 			useSuspense: false,
 		},
-		// Start with English to match server-side rendering
-		lng: "en",
+		// Set initial language based on detection
+		lng: detectBrowserLanguage(),
 
 		interpolation: {
 			escapeValue: false, // React already escapes values
 		},
 
 		detection: {
-			// Only detect language on client-side after hydration
+			// Detection order: localStorage first, then browser language, then HTML lang attribute
 			order:
 				typeof window !== "undefined"
-					? ["localStorage", "navigator", "htmlTag"]
-					: [],
+					? ["localStorage", "navigator", "htmlTag", "querystring", "cookie"]
+					: ["htmlTag"],
 			caches: ["localStorage"],
+			
+			// localStorage settings
 			lookupLocalStorage: "i18nextLng",
+			
+			// Navigator/browser language settings
+			lookupFromNavigator: true,
+			checkWhitelist: true,
+			
+			// HTML lang attribute
 			lookupFromPathIndex: 0,
 			lookupFromSubdomainIndex: 0,
+			
+			// Query string and cookie support (optional)
+			lookupQuerystring: "lng",
+			lookupCookie: "i18next",
+			
 			// Convert browser language codes to our supported languages
 			convertDetectedLanguage: (lng: string) => {
-				// Handle Chinese variants
-				if (lng.startsWith("zh")) {
+				console.log("Detected browser language:", lng);
+				
+				// Handle Chinese variants (zh, zh-CN, zh-TW, zh-HK, etc.)
+				if (lng.toLowerCase().startsWith("zh")) {
 					return "zh";
 				}
-				// Handle English variants
-				if (lng.startsWith("en")) {
+				
+				// Handle English variants (en, en-US, en-GB, etc.)
+				if (lng.toLowerCase().startsWith("en")) {
 					return "en";
 				}
+				
+				// For other languages, check if we support them
+				const supportedLanguages = ["en", "zh"];
+				const baseLang = lng.split("-")[0].toLowerCase();
+				
+				if (supportedLanguages.includes(baseLang)) {
+					return baseLang;
+				}
+				
 				// Default to English for unsupported languages
+				console.log("Unsupported language detected, falling back to English:", lng);
 				return "en";
 			},
 		},
 	});
+
+// Enhanced client-side language detection
+if (typeof window !== "undefined") {
+	// Initialize language detection after hydration
+	const initializeLanguage = () => {
+		const detectedLang = detectBrowserLanguage();
+		
+		// Only change language if it's different from current
+		if (i18n.language !== detectedLang) {
+			console.log("Browser language detected:", navigator.language, "-> Setting to:", detectedLang);
+			i18n.changeLanguage(detectedLang);
+		}
+		
+		// Update HTML lang attribute
+		document.documentElement.lang = detectedLang === "zh" ? "zh-CN" : "en";
+	};
+	
+	// Run initialization
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", initializeLanguage);
+	} else {
+		// DOM is already ready, run immediately
+		initializeLanguage();
+	}
+	
+	// Listen for language changes and update HTML lang attribute
+	i18n.on("languageChanged", (lng) => {
+		document.documentElement.lang = lng === "zh" ? "zh-CN" : "en";
+		console.log("Language changed to:", lng);
+	});
+}
 
 export default i18n;
