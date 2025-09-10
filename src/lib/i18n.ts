@@ -5,6 +5,9 @@ import { initReactI18next } from "react-i18next";
 const resources = {
 	en: {
 		translation: {
+			// Common
+			"common.cancel": "Cancel",
+
 			// Header
 			"header.backToHome": "Back to home",
 			"header.viewOnGitHub": "View on GitHub",
@@ -80,6 +83,8 @@ const resources = {
 			"messages.untitledMessage": "Untitled Message",
 			"messages.noContent": "No content",
 			"messages.newMessage": "New Message",
+			"messages.delete": "Delete",
+			"messages.deleteMessageTitle": "Delete Message",
 			"messages.deleteConfirm":
 				"Are you sure you want to delete this message? This action cannot be undone.",
 			"messages.failedToCreate": "Failed to create message. Please try again.",
@@ -87,9 +92,10 @@ const resources = {
 
 			// Room/Session
 			"session.deleteRoom": "Delete Room",
+			"session.deleteRoomTitle": "Delete Room",
 			"session.deleting": "Deleting...",
 			"session.deleteRoomConfirm":
-				'Are you sure you want to delete room "{roomName}"? This action cannot be undone.',
+				"Are you sure you want to delete room ? This action cannot be undone.",
 			"session.failedToDelete": "Failed to delete room. Please try again.",
 			"session.newSession": "New Session",
 
@@ -129,7 +135,8 @@ const resources = {
 
 			// Session info
 			"sessionInfo.syncSession": "Sync Session",
-			"sessionInfo.shareCode": "Share this code with other devices to sync text",
+			"sessionInfo.shareCode":
+				"Share this code with other devices to sync text",
 			"sessionInfo.sessionCode": "Session Code",
 			"sessionInfo.roomCode": "Room Code",
 			"sessionInfo.copy": "Copy",
@@ -137,52 +144,72 @@ const resources = {
 			"sessionInfo.copySessionCode": "Copy session code",
 			"sessionInfo.shareSession": "Share session",
 			"sessionInfo.scanToJoin": "Scan to join",
-			"sessionInfo.sessionExpiry": "Your session will be not available after 24 hours, or you can delete it manually.",
+			"sessionInfo.sessionExpiry":
+				"Your session will be not available after 24 hours, or you can delete it manually.",
 			"sessionInfo.roomIdCopied": "Room ID copied to clipboard",
 			"sessionInfo.joinMySession": "Join my text sync session",
-			"sessionInfo.joinMySessionText": "Join my PassEverything sync session with code: {{roomId}}",
+			"sessionInfo.joinMySessionText":
+				"Join my PassEverything sync session with code: {{roomId}}",
 
 			// Messages List
 			"messagesList.messages": "Messages",
 			"messagesList.loading": "Loading...",
 			"messagesList.loadingMessages": "Loading messages",
-			"messagesList.loadingDescription": "Please wait while we fetch your messages...",
+			"messagesList.loadingDescription":
+				"Please wait while we fetch your messages...",
 			"messagesList.noMessagesYet": "No messages yet",
 			"messagesList.startCollaborating": "Start collaborating",
-			"messagesList.createFirstMessage": "Create your first message to begin sharing content across devices.",
+			"messagesList.createFirstMessage":
+				"Create your first message to begin sharing content across devices.",
 			"messagesList.createFirstMessageButton": "Create First Message",
 			"messagesList.creating": "Creating...",
 			"messagesList.newMessage": "New Message",
 			"messagesList.messageCount": "{{count}} message",
 			"messagesList.messageCount_plural": "{{count}} messages",
-			"messagesList.failedToDelete": "Failed to delete message. Please try again.",
+			"messagesList.failedToDelete":
+				"Failed to delete message. Please try again.",
 
 			// Join Room Dialog
-			"joinRoom.sessionCodeHelper": "Session codes are exactly 6 characters (letters and numbers)",
+			"joinRoom.sessionCodeHelper":
+				"Session codes are exactly 6 characters (letters and numbers)",
 			"joinRoom.failedToJoin": "Failed to join session. Please try again.",
 
 			// SEO
 			"seo.title": "TextSync — Online Clipboard & Cross-Device Text Sync",
-			"seo.description": "Instantly sync text, clipboard content, and messages across all your devices. Free online clipboard with real-time synchronization, secure temporary storage, and cross-platform support. No registration required.",
-			"seo.keywords": "online clipboard, cross device clipboard, text sync, clipboard sync, copy paste between devices, secure clipboard, temporary text storage, cross platform clipboard, device synchronization, instant text sharing, clipboard sharing, remote clipboard, universal clipboard, multi device clipboard, clipboard manager",
+			"seo.description":
+				"Instantly sync text, clipboard content, and messages across all your devices. Free online clipboard with real-time synchronization, secure temporary storage, and cross-platform support. No registration required.",
+			"seo.keywords":
+				"online clipboard, cross device clipboard, text sync, clipboard sync, copy paste between devices, secure clipboard, temporary text storage, cross platform clipboard, device synchronization, instant text sharing, clipboard sharing, remote clipboard, universal clipboard, multi device clipboard, clipboard manager",
 			"seo.ogTitle": "TextSync — Online Clipboard & Cross-Device Text Sync",
-			"seo.ogDescription": "Instantly sync text, clipboard content, and messages across all your devices. Free online clipboard with real-time synchronization, secure temporary storage, and cross-platform support. No registration required.",
-			"seo.twitterTitle": "TextSync — Online Clipboard & Cross-Device Text Sync",
-			"seo.twitterDescription": "Instantly sync text, clipboard content, and messages across all your devices. Free online clipboard with real-time synchronization, secure temporary storage, and cross-platform support. No registration required.",
+			"seo.ogDescription":
+				"Instantly sync text, clipboard content, and messages across all your devices. Free online clipboard with real-time synchronization, secure temporary storage, and cross-platform support. No registration required.",
+			"seo.twitterTitle":
+				"TextSync — Online Clipboard & Cross-Device Text Sync",
+			"seo.twitterDescription":
+				"Instantly sync text, clipboard content, and messages across all your devices. Free online clipboard with real-time synchronization, secure temporary storage, and cross-platform support. No registration required.",
 			"seo.appName": "TextSync - Online Clipboard & Text Sync",
-			"seo.appDescription": "Cross-device clipboard synchronization and real-time text sync application",
+			"seo.appDescription":
+				"Cross-device clipboard synchronization and real-time text sync application",
 			"seo.imageAlt": "TextSync - Online Clipboard & Cross-Device Text Sync",
 
 			// Home page SEO
-			"seo.home.title": "Create Your TextSync Workspace - Multi-Message Collaboration Platform",
-			"seo.home.description": "Create unlimited messages in your TextSync workspace. Real-time collaboration platform with instant synchronization across all devices. Perfect for teams, developers, and content creators.",
-			"seo.home.keywords": "create workspace, multi-message collaboration, real-time sync, team workspace, message organization, cross-device sync, instant collaboration",
-			"seo.home.ogTitle": "Create Your TextSync Workspace - Multi-Message Collaboration Platform",
-			"seo.home.ogDescription": "Start collaborating with TextSync's multi-message workspace. Create, organize, and sync unlimited messages across all your devices in real-time.",
+			"seo.home.title":
+				"Create Your TextSync Workspace - Multi-Message Collaboration Platform",
+			"seo.home.description":
+				"Create unlimited messages in your TextSync workspace. Real-time collaboration platform with instant synchronization across all devices. Perfect for teams, developers, and content creators.",
+			"seo.home.keywords":
+				"create workspace, multi-message collaboration, real-time sync, team workspace, message organization, cross-device sync, instant collaboration",
+			"seo.home.ogTitle":
+				"Create Your TextSync Workspace - Multi-Message Collaboration Platform",
+			"seo.home.ogDescription":
+				"Start collaborating with TextSync's multi-message workspace. Create, organize, and sync unlimited messages across all your devices in real-time.",
 		},
 	},
 	zh: {
 		translation: {
+			// Common
+			"common.cancel": "取消",
+
 			// Header
 			"header.backToHome": "返回首页",
 			"header.viewOnGitHub": "在 GitHub 上查看",
@@ -255,14 +282,16 @@ const resources = {
 			"messages.untitledMessage": "无标题消息",
 			"messages.noContent": "无内容",
 			"messages.newMessage": "新消息",
+			"messages.delete": "删除",
+			"messages.deleteMessageTitle": "删除消息",
 			"messages.deleteConfirm": "您确定要删除此消息吗？此操作无法撤销。",
 			"messages.failedToCreate": "创建消息失败。请重试。",
 			"messages.failedToRename": "重命名消息失败。请重试。",
 
 			// Room/Session
 			"session.deleteRoom": "删除房间",
+			"session.deleteRoomTitle": "删除房间",
 			"session.deleting": "删除中...",
-
 			"session.deleteRoomConfirm": "您确定要删除房间吗？此操作无法撤销。",
 			"session.failedToDelete": "删除房间失败。请重试。",
 			"session.newSession": "新会话",
@@ -282,7 +311,8 @@ const resources = {
 			"textSync.loadingContent": "加载内容中",
 			"textSync.loadingMessage": "请稍候，我们正在加载您的消息内容...",
 			"textSync.noMessageSelected": "未选择消息",
-			"textSync.noMessageDescription": "从侧边栏选择一条消息开始编辑，或创建新消息开始协作。",
+			"textSync.noMessageDescription":
+				"从侧边栏选择一条消息开始编辑，或创建新消息开始协作。",
 
 			// Join room dialog
 			"joinRoom.title": "加入房间",
@@ -309,10 +339,12 @@ const resources = {
 			"sessionInfo.copySessionCode": "复制会话代码",
 			"sessionInfo.shareSession": "分享会话",
 			"sessionInfo.scanToJoin": "扫码加入",
-			"sessionInfo.sessionExpiry": "您的会话将在24小时后不可用，或者您可以手动删除。",
+			"sessionInfo.sessionExpiry":
+				"您的会话将在24小时后不可用，或者您可以手动删除。",
 			"sessionInfo.roomIdCopied": "房间ID已复制到剪贴板",
 			"sessionInfo.joinMySession": "加入我的文本同步会话",
-			"sessionInfo.joinMySessionText": "使用代码加入我的PassEverything同步会话：{{roomId}}",
+			"sessionInfo.joinMySessionText":
+				"使用代码加入我的PassEverything同步会话：{{roomId}}",
 
 			// Messages List
 			"messagesList.messages": "消息",
@@ -321,7 +353,8 @@ const resources = {
 			"messagesList.loadingDescription": "请稍候，我们正在获取您的消息...",
 			"messagesList.noMessagesYet": "暂无消息",
 			"messagesList.startCollaborating": "开始协作",
-			"messagesList.createFirstMessage": "创建您的第一条消息以开始跨设备分享内容。",
+			"messagesList.createFirstMessage":
+				"创建您的第一条消息以开始跨设备分享内容。",
 			"messagesList.createFirstMessageButton": "创建第一条消息",
 			"messagesList.creating": "创建中...",
 			"messagesList.newMessage": "新消息",
@@ -358,7 +391,10 @@ i18n
 
 		detection: {
 			// Only detect language on client-side after hydration
-			order: typeof window !== 'undefined' ? ["localStorage", "navigator", "htmlTag"] : [],
+			order:
+				typeof window !== "undefined"
+					? ["localStorage", "navigator", "htmlTag"]
+					: [],
 			caches: ["localStorage"],
 			lookupLocalStorage: "i18nextLng",
 			lookupFromPathIndex: 0,
@@ -366,15 +402,15 @@ i18n
 			// Convert browser language codes to our supported languages
 			convertDetectedLanguage: (lng: string) => {
 				// Handle Chinese variants
-				if (lng.startsWith('zh')) {
-					return 'zh';
+				if (lng.startsWith("zh")) {
+					return "zh";
 				}
 				// Handle English variants
-				if (lng.startsWith('en')) {
-					return 'en';
+				if (lng.startsWith("en")) {
+					return "en";
 				}
 				// Default to English for unsupported languages
-				return 'en';
+				return "en";
 			},
 		},
 	});

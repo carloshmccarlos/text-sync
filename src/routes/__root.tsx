@@ -10,11 +10,11 @@ import {
 	Scripts,
 	useLocation,
 } from "@tanstack/react-router";
-import i18n from "~/lib/i18n";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import Header from "~/components/Header";
 import { Toaster } from "~/components/ui/sonner";
 import { env as clientEnv } from "~/env/client";
+import i18n from "~/lib/i18n";
 import "~/lib/i18n"; // Initialize i18n
 import type { getUser } from "~/lib/auth/functions/getUser";
 import appCss from "~/styles.css?url";
@@ -32,11 +32,11 @@ export const Route = createRootRouteWithContext<{
 	},*/
 	head: () => {
 		const siteUrl = clientEnv.VITE_BASE_URL.replace(/\/$/, "");
-		const currentLang = i18n.language || 'en';
-		const isZh = currentLang === 'zh';
-		
+		const currentLang = i18n.language || "en";
+		const isZh = currentLang === "zh";
+
 		// Get localized SEO content
-		const title = isZh 
+		const title = isZh
 			? "文本同步 — 在线剪贴板和跨设备文本同步"
 			: "TextSync — Online Clipboard & Cross-Device Text Sync";
 		const description = isZh
@@ -51,8 +51,8 @@ export const Route = createRootRouteWithContext<{
 		const imageAlt = isZh
 			? "文本同步 - 在线剪贴板和跨设备文本同步"
 			: "TextSync - Online Clipboard & Cross-Device Text Sync";
-		
-		const ogImage = `${siteUrl}/og${isZh ? '-zh' : ''}.png`;
+
+		const ogImage = `${siteUrl}/og${isZh ? "-zh" : ""}.png`;
 		const canonical = siteUrl;
 
 		// Structured data for better SEO
@@ -60,7 +60,7 @@ export const Route = createRootRouteWithContext<{
 			"@context": "https://schema.org",
 			"@type": "WebApplication",
 			name: appName,
-			alternateName: isZh 
+			alternateName: isZh
 				? ["文本同步", "在线剪贴板", "跨设备剪贴板"]
 				: ["TextSync", "Online Clipboard", "Cross Device Clipboard"],
 			description: description,
@@ -74,29 +74,31 @@ export const Route = createRootRouteWithContext<{
 				priceCurrency: isZh ? "CNY" : "USD",
 				availability: "https://schema.org/InStock",
 			},
-			featureList: isZh ? [
-				"跨设备剪贴板同步",
-				"设备间实时文本同步",
-				"安全在线剪贴板存储",
-				"无需注册",
-				"设备间即时复制粘贴",
-				"临时安全数据存储",
-				"多平台兼容性",
-				"基于房间的文本分享",
-				"自动过期剪贴板内容",
-				"移动端和桌面端支持",
-			] : [
-				"Cross-device clipboard synchronization",
-				"Real-time text sync across devices",
-				"Secure online clipboard storage",
-				"No registration required",
-				"Instant copy-paste between devices",
-				"Temporary secure data storage",
-				"Multi-platform compatibility",
-				"Room-based text sharing",
-				"Auto-expiring clipboard content",
-				"Mobile and desktop support",
-			],
+			featureList: isZh
+				? [
+						"跨设备剪贴板同步",
+						"设备间实时文本同步",
+						"安全在线剪贴板存储",
+						"无需注册",
+						"设备间即时复制粘贴",
+						"临时安全数据存储",
+						"多平台兼容性",
+						"基于房间的文本分享",
+						"自动过期剪贴板内容",
+						"移动端和桌面端支持",
+					]
+				: [
+						"Cross-device clipboard synchronization",
+						"Real-time text sync across devices",
+						"Secure online clipboard storage",
+						"No registration required",
+						"Instant copy-paste between devices",
+						"Temporary secure data storage",
+						"Multi-platform compatibility",
+						"Room-based text sharing",
+						"Auto-expiring clipboard content",
+						"Mobile and desktop support",
+					],
 			aggregateRating: {
 				"@type": "AggregateRating",
 				ratingValue: "4.9",
@@ -113,7 +115,7 @@ export const Route = createRootRouteWithContext<{
 			dateModified: new Date().toISOString().split("T")[0],
 			inLanguage: isZh ? "zh-CN" : "en-US",
 			isAccessibleForFree: true,
-			screenshot: `${siteUrl}/screenshot${isZh ? '-zh' : ''}.png`,
+			screenshot: `${siteUrl}/screenshot${isZh ? "-zh" : ""}.png`,
 			keywords: keywords,
 		};
 
@@ -146,8 +148,12 @@ export const Route = createRootRouteWithContext<{
 					content: imageAlt,
 				} as any,
 				{ property: "og:locale", content: isZh ? "zh_CN" : "en_US" } as any,
-				...(isZh ? [] : [{ property: "og:locale:alternate", content: "zh_CN" } as any]),
-				...(!isZh ? [] : [{ property: "og:locale:alternate", content: "en_US" } as any]),
+				...(isZh
+					? []
+					: [{ property: "og:locale:alternate", content: "zh_CN" } as any]),
+				...(!isZh
+					? []
+					: [{ property: "og:locale:alternate", content: "en_US" } as any]),
 
 				// Twitter
 				{ name: "twitter:card", content: "summary_large_image" },
@@ -193,20 +199,34 @@ export const Route = createRootRouteWithContext<{
 				} as any,
 
 				// Additional clipboard-specific meta tags
-				{ name: "category", content: isZh ? "生产力工具" : "Productivity Tools" },
+				{
+					name: "category",
+					content: isZh ? "生产力工具" : "Productivity Tools",
+				},
 				{ name: "coverage", content: "Worldwide" },
 				{ name: "distribution", content: "Global" },
 				{ name: "rating", content: "General" },
 				{ name: "target", content: "all" },
 				{ name: "HandheldFriendly", content: "True" },
 				{ name: "MobileOptimized", content: "320" },
-				
+
 				// Chinese-specific meta tags
-				...(isZh ? [
-					{ name: "baidu-site-verification", content: "your-baidu-verification-code" },
-					{ name: "360-site-verification", content: "your-360-verification-code" },
-					{ name: "sogou_site_verification", content: "your-sogou-verification-code" },
-				] : []),
+				...(isZh
+					? [
+							{
+								name: "baidu-site-verification",
+								content: "your-baidu-verification-code",
+							},
+							{
+								name: "360-site-verification",
+								content: "your-360-verification-code",
+							},
+							{
+								name: "sogou_site_verification",
+								content: "your-sogou-verification-code",
+							},
+						]
+					: []),
 
 				// App-specific functionality descriptions
 				{ name: "apple-mobile-web-app-title", content: "TextSync Clipboard" },
@@ -258,10 +278,14 @@ export const Route = createRootRouteWithContext<{
 					href: "https://fonts.gstatic.com",
 					crossOrigin: "anonymous",
 				} as any,
-				
+
 				// Hreflang for international SEO
 				{ rel: "alternate", hrefLang: "en", href: `${siteUrl}?lang=en` } as any,
-				{ rel: "alternate", hrefLang: "zh-CN", href: `${siteUrl}?lang=zh` } as any,
+				{
+					rel: "alternate",
+					hrefLang: "zh-CN",
+					href: `${siteUrl}?lang=zh`,
+				} as any,
 				{ rel: "alternate", hrefLang: "zh", href: `${siteUrl}?lang=zh` } as any,
 				{ rel: "alternate", hrefLang: "x-default", href: siteUrl } as any,
 			],
@@ -303,11 +327,11 @@ function HeaderWrapper() {
 }
 
 function RootDocument({ children }: { readonly children: React.ReactNode }) {
-	const currentLang = i18n.language || 'en';
-	
+	const currentLang = i18n.language || "en";
+
 	return (
 		// suppress since we're updating the "dark" class in a custom script below
-		<html lang={currentLang === 'zh' ? 'zh-CN' : 'en'} suppressHydrationWarning>
+		<html lang={currentLang === "zh" ? "zh-CN" : "en"} suppressHydrationWarning>
 			<head>
 				<HeadContent />
 			</head>

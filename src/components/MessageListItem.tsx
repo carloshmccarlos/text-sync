@@ -2,6 +2,7 @@
 import { Edit2, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ConfirmDialog } from "~/components/ConfirmDialog";
 import { Button } from "~/components/ui/button";
 
 interface MessageListItemProps {
@@ -25,16 +26,19 @@ export function MessageListItem({
 	onRename,
 }: MessageListItemProps) {
 	const [isEditing, setIsEditing] = useState(false);
+	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 	const [editTitle, setEditTitle] = useState(message.title || "");
 	const inputRef = useRef<HTMLInputElement>(null);
 	const { t } = useTranslation();
 
 	const handleDelete = (e: React.MouseEvent) => {
 		e.stopPropagation(); // Prevent triggering selection
+		setShowDeleteConfirm(true);
+	};
 
-		if (confirm(t('messages.deleteConfirm'))) {
-			onDelete(message.id);
-		}
+	const handleConfirmDelete = () => {
+		onDelete(message.id);
+		setShowDeleteConfirm(false);
 	};
 
 	const handleRename = (e: React.MouseEvent) => {
@@ -77,18 +81,19 @@ export function MessageListItem({
 		: t('messages.noContent');
 
 	return (
-		// biome-ignore lint/a11y/noStaticElementInteractions: <explanation>
-		<div
-			onClick={() => onSelect(message.id)}
-			className={`
-				group relative p-3 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-lg
-				${
-					isSelected
-						? "bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-200 dark:border-blue-700 shadow-lg"
-						: "bg-white/60 dark:bg-gray-700/60 border border-gray-200/60 dark:border-gray-600/60 hover:bg-white/80 dark:hover:bg-gray-700/80 hover:border-gray-300 dark:hover:border-gray-500"
-				}
-			`}
-		>
+		<>
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: <explanation> */}
+			<div
+				onClick={() => onSelect(message.id)}
+				className={`
+					group relative p-3 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-lg
+					${
+						isSelected
+							? "bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-200 dark:border-blue-700 shadow-lg"
+							: "bg-white/60 dark:bg-gray-700/60 border border-gray-200/60 dark:border-gray-600/60 hover:bg-white/80 dark:hover:bg-gray-700/80 hover:border-gray-300 dark:hover:border-gray-500"
+					}
+				`}
+			>
 			<div className="flex items-start justify-between">
 				<div className="flex-1 min-w-0">
 					<div className="flex items-center gap-2 mb-2">
@@ -141,5 +146,18 @@ export function MessageListItem({
 				</div>
 			</div>
 		</div>
+
+		{/* Delete Confirmation Dialog */}
+		<ConfirmDialog
+			open={showDeleteConfirm}
+			onOpenChange={setShowDeleteConfirm}
+			title={t("messages.deleteMessageTitle")}
+			description={t("messages.deleteConfirm")}
+			confirmText={t("messages.delete")}
+			cancelText={t("common.cancel")}
+			onConfirm={handleConfirmDelete}
+			variant="destructive"
+		/>
+	</>
 	);
 }

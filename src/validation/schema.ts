@@ -2,6 +2,7 @@ import * as v from "valibot";
 
 // Message schemas
 export const MessageCreateSchema = v.object({
+	id: v.optional(v.string()),
 	roomId: v.pipe(v.string(), v.nonEmpty("Room ID is required")),
 	title: v.optional(v.pipe(v.string(), v.maxLength(255))),
 	content: v.optional(v.string()),

@@ -1,6 +1,10 @@
 import { createCollection } from "@tanstack/db";
 import { electricCollectionOptions } from "@tanstack/electric-db-collection";
-import { updateMessage } from "~/serverFn/messages";
+import {
+	createMessage,
+	deleteMessage,
+	updateMessage,
+} from "~/serverFn/messages";
 import { MessageCollectionSchema } from "~/validation/schema";
 
 export const createMessagesCollection = (roomId: string) => {
@@ -32,6 +36,35 @@ export const createMessagesCollection = (roomId: string) => {
 				const result = await updateMessage({ data: updateData });
 				const txid = result?.txid ? Number(result.txid) : 0;
 				return { txid };
+			},
+
+			onInsert: async ({ transaction }) => {
+				const { modified } = transaction.mutations[0];
+
+				const createData = {
+					id: modified.id,
+					roomId: modified.room_id,
+					title: modified.title ?? undefined,
+					content: modified.content ?? undefined,
+				};
+
+				const result = await createMessage({ data: createData });
+
+				const txid = result?.txid ? Number(result.txid) : 0;
+				return { txid, result };
+			},
+
+			onDelete: async ({ transaction }) => {
+				const { modified } = transaction.mutations[0];
+
+				const deleteData = {
+					id: modified.id,
+				};
+
+				const result = await deleteMessage({ data: deleteData });
+
+				const txid = result?.txid ? Number(result.txid) : 0;
+				return { txid, result };
 			},
 		}),
 	);

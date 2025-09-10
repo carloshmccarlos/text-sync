@@ -45,11 +45,18 @@ export const createMessage = createServerFn({ method: "POST" })
 		const [message] = await db
 			.insert(messages)
 			.values({
+				id: data.id ? data.id : undefined,
 				roomId: data.roomId,
 				title: data.title,
 				content: "",
 			})
-			.returning();
+			.returning({
+				id: messages.id,
+				title: messages.title,
+				content: messages.content,
+				txid: sql<string>`txid_current()::text`,
+			});
+
 		return message;
 	});
 
@@ -89,6 +96,8 @@ export const deleteMessage = createServerFn({ method: "POST" })
 		const [deleted] = await db
 			.delete(messages)
 			.where(eq(messages.id, id))
-			.returning();
+			.returning({
+				txid: sql<string>`txid_current()::text`,
+			});
 		return deleted ?? null;
 	});
