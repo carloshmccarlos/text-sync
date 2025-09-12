@@ -81,7 +81,6 @@ function Home() {
 		// 1) Create a new room
 		const name = t("session.newSession");
 
-		console.log(name);
 		const room = await createRoom({ data: { name } });
 		if (!room?.id) return;
 		// 2) Create an empty message for this room

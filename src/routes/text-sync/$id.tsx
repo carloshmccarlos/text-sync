@@ -58,7 +58,7 @@ function TextSyncPage() {
 		string | undefined
 	>(initMessageId);
 
-	const messagesCollection = useMemo(() => createMessagesCollection(room.id), [room.id]);
+	const messagesCollection = createMessagesCollection(room.id);
 
 	if (isExpired) {
 		return <RoomExpiredError roomId={room.id} />;
