@@ -42,20 +42,20 @@ export const getMessage = createServerFn({ method: "POST" })
 export const createMessage = createServerFn({ method: "POST" })
 	.validator(MessageCreateSchema)
 	.handler(async ({ data }) => {
-		const [message] = await db
-			.insert(messages)
-			.values({
-				id: data.id ? data.id : undefined,
-				roomId: data.roomId,
-				title: data.title,
-				content: "",
-			})
-			.returning({
-				id: messages.id,
-				title: messages.title,
-				content: messages.content,
-				txid: sql<string>`txid_current()::text`,
-			});
+		// Ensure all values are properly typed for CF Workers
+		const insertData = {
+			id: data.id || undefined,
+			roomId: data.roomId,
+			title: data.title || null,
+			content: "",
+		};
+
+		const [message] = await db.insert(messages).values(insertData).returning({
+			id: messages.id,
+			title: messages.title,
+			content: messages.content,
+			txid: sql<string>`txid_current()::text`,
+		});
 
 		return message;
 	});
