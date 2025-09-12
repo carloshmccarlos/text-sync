@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ConfirmDialog } from "~/components/ConfirmDialog";
 import { MessagesList } from "~/components/MessagesList";
@@ -58,7 +58,7 @@ function TextSyncPage() {
 		string | undefined
 	>(initMessageId);
 
-	const messagesCollection = createMessagesCollection(room.id);
+	const messagesCollection = useMemo(() => createMessagesCollection(room.id), [room.id]);
 
 	if (isExpired) {
 		return <RoomExpiredError roomId={room.id} />;
