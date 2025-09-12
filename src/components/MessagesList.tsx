@@ -25,12 +25,6 @@ export function MessagesList({
 	const [isCreatingMessage, setIsCreatingMessage] = useState(false);
 
 	const { data: messages, isLoading } = useLiveQuery((q) => {
-		console.log(
-			"messagesCollection type:",
-			typeof messagesCollection,
-			messagesCollection,
-		);
-
 		return q.from({ messages: messagesCollection }).select(({ messages }) => ({
 			id: messages.id,
 			title: messages.title,
