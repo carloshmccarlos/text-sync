@@ -3,6 +3,7 @@ import { z } from "zod/v4";
 
 export const env = createEnv({
   server: {
+    NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
     DATABASE_URL: z.url(),
     VITE_BASE_URL: z.url().default("http://localhost:3000"),
     BETTER_AUTH_SECRET: z.string().min(1),

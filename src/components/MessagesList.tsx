@@ -43,16 +43,7 @@ export function MessagesList({
     );
   }
 
-  const {
-    data: messages,
-    isLoading,
-    error,
-  } = useLiveQuery((q) => {
-    if (!messagesCollection) {
-      console.error("messagesCollection is null or undefined");
-      return null;
-    }
-
+  const { data: messages, isLoading } = useLiveQuery((q) => {
     console.log(
       "messagesCollection type:",
       typeof messagesCollection,
@@ -66,11 +57,6 @@ export function MessagesList({
       roomId: messages.room_id,
     }));
   });
-
-  // Log any query errors
-  if (error) {
-    console.error("useLiveQuery error:", error);
-  }
 
   const handleCreateMessage = async () => {
     setIsCreatingMessage(true);
