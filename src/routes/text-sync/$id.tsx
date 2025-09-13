@@ -59,8 +59,9 @@ function TextSyncPage() {
 	>(initMessageId);
 
 	const messagesCollection = createMessagesCollection(room.id);
+
 	messagesCollection.preload();
-	if (messagesCollection) return null;
+	if (!messagesCollection) return null;
 
 	if (isExpired) {
 		return <RoomExpiredError roomId={room.id} />;
