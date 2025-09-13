@@ -11,7 +11,7 @@ export default defineConfig({
 		}),
 		tailwindcss(),
 		tanstackStart({
-			target: "vercel",
+			target: "cloudflare-module",
 			// https://github.com/TanStack/router/discussions/2863#discussioncomment-13713677
 			customViteReactPlugin: true,
 

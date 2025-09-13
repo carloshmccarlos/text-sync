@@ -37,7 +37,12 @@ export const Route = createFileRoute("/text-sync/$id")({
 			};
 		}
 
+		const messagesCollection = createMessagesCollection(room.id);
+
+		await messagesCollection.preload();
+
 		return {
+			messagesCollection,
 			room,
 			initMessageId: messages?.id,
 			isExpired: false,
@@ -49,7 +54,8 @@ export const Route = createFileRoute("/text-sync/$id")({
 });
 
 function TextSyncPage() {
-	const { room, isExpired, initMessageId } = Route.useLoaderData();
+	const { room, isExpired, initMessageId, messagesCollection } =
+		Route.useLoaderData();
 	const { t } = useTranslation();
 
 	const [isDeleting, setIsDeleting] = useState(false);
@@ -58,9 +64,6 @@ function TextSyncPage() {
 		string | undefined
 	>(initMessageId);
 
-	const messagesCollection = createMessagesCollection(room.id);
-
-	messagesCollection.preload();
 	if (!messagesCollection) return null;
 
 	if (isExpired) {
