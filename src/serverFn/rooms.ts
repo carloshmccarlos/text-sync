@@ -1,25 +1,33 @@
 import { createServerFn } from "@tanstack/react-start";
-import { eq, lt } from "drizzle-orm";
 import * as v from "valibot";
-import { db } from "~/lib/db";
-import { messages, rooms } from "~/lib/db/schema/schema";
+import { supabase } from "~/lib/db";
 import { RoomCreateSchema, RoomUpdateSchema } from "~/validation/schema";
 
 // List all rooms
 export const listRooms = createServerFn({ method: "GET" }).handler(async () => {
-	return db.select().from(rooms);
+	const { data, error } = await supabase.from("rooms").select("*");
+
+	if (error) throw error;
+	return data || [];
 });
 
 // Get one room by id
 export const getRoom = createServerFn({ method: "POST" })
 	.validator(v.object({ id: v.string() }))
 	.handler(async ({ data }) => {
-		const [row] = await db
-			.select()
-			.from(rooms)
-			.where(eq(rooms.id, data.id))
-			.leftJoin(messages, eq(rooms.id, messages.roomId));
-		return row ?? null;
+		// Get room with messages using Supabase's foreign key relationships
+		const { data: room, error } = await supabase
+			.from("rooms")
+			.select(`
+				*,
+				messages(*)
+			`)
+			.eq("id", data.id)
+			.single();
+
+		if (error && error.code !== "PGRST116") throw error; // PGRST116 is "not found"
+
+		return { room, messages: room.messages };
 	});
 
 // Create a room
@@ -39,16 +47,20 @@ export const createRoom = createServerFn({ method: "POST" })
 		while (attempts < maxAttempts) {
 			const id = makeId();
 			try {
-				const [created] = await db
-					.insert(rooms)
-					.values({ id, name: data.name })
-					.returning();
+				const { data: created, error } = await supabase
+					.from("rooms")
+					.insert({ id, name: data.name })
+					.select("*")
+					.single();
+
+				if (error) throw error;
 				return created;
-			} catch (error) {
+			} catch (error: any) {
 				// If it's a unique constraint violation, try again with a new ID
 				if (
-					error instanceof Error &&
-					error.message.includes("UNIQUE constraint failed")
+					error?.code === "23505" || // PostgreSQL unique violation
+					error?.message?.includes("duplicate key") ||
+					error?.message?.includes("UNIQUE constraint failed")
 				) {
 					attempts++;
 					continue;
@@ -66,7 +78,7 @@ export const createRoom = createServerFn({ method: "POST" })
 export const updateRoom = createServerFn({ method: "POST" }).handler(
 	async (data: unknown) => {
 		const validatedData = v.parse(RoomUpdateSchema, data);
-		const updateValues: Partial<(typeof rooms)["$inferInsert"]> = {};
+		const updateValues: any = {};
 		if (typeof validatedData.name === "string")
 			updateValues.name = validatedData.name;
 
@@ -74,12 +86,14 @@ export const updateRoom = createServerFn({ method: "POST" }).handler(
 			throw new Error("No fields provided to update");
 		}
 
-		const [updated] = await db
-			.update(rooms)
-			.set(updateValues)
-			.where(eq(rooms.id, validatedData.id))
-			.returning();
+		const { data: updated, error } = await supabase
+			.from("rooms")
+			.update(updateValues)
+			.eq("id", validatedData.id)
+			.select("*")
+			.single();
 
+		if (error) throw error;
 		return updated ?? null;
 	},
 );
@@ -88,11 +102,14 @@ export const updateRoom = createServerFn({ method: "POST" }).handler(
 export const updateRoomTimestamp = createServerFn({ method: "POST" })
 	.validator(v.object({ id: v.string() }))
 	.handler(async ({ data }) => {
-		const [updated] = await db
-			.update(rooms)
-			.set({ updatedAt: new Date() })
-			.where(eq(rooms.id, data.id))
-			.returning();
+		const { data: updated, error } = await supabase
+			.from("rooms")
+			.update({ updated_at: new Date().toISOString() })
+			.eq("id", data.id)
+			.select("*")
+			.single();
+
+		if (error && error.code !== "PGRST116") throw error; // PGRST116 is "not found"
 		return updated ?? null;
 	});
 
@@ -100,10 +117,14 @@ export const updateRoomTimestamp = createServerFn({ method: "POST" })
 export const deleteRoom = createServerFn({ method: "POST" })
 	.validator(v.object({ id: v.string() }))
 	.handler(async ({ data }) => {
-		const [deleted] = await db
-			.delete(rooms)
-			.where(eq(rooms.id, data.id))
-			.returning();
+		const { data: deleted, error } = await supabase
+			.from("rooms")
+			.delete()
+			.eq("id", data.id)
+			.select("*")
+			.single();
+
+		if (error && error.code !== "PGRST116") throw error; // PGRST116 is "not found"
 		return deleted ?? null;
 	});
 
@@ -113,34 +134,40 @@ export const deleteExpiredRooms = createServerFn({ method: "POST" }).handler(
 		const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
 		// First, get the rooms that will be deleted for logging
-		const expiredRooms = await db
-			.select({ id: rooms.id, name: rooms.name, createdAt: rooms.createdAt })
-			.from(rooms)
-			.where(lt(rooms.createdAt, twentyFourHoursAgo));
+		const { data: expiredRooms, error: selectError } = await supabase
+			.from("rooms")
+			.select("id, name, created_at")
+			.lt("created_at", twentyFourHoursAgo.toISOString());
 
-		if (expiredRooms.length === 0) {
+		if (selectError) throw selectError;
+
+		if (!expiredRooms || expiredRooms.length === 0) {
 			console.log("No expired rooms found");
 			return { deletedCount: 0, deletedRooms: [] };
 		}
 
 		// Delete the expired rooms (messages will be deleted automatically due to cascade)
-		const deletedRooms = await db
-			.delete(rooms)
-			.where(lt(rooms.createdAt, twentyFourHoursAgo))
-			.returning();
+		const { data: deletedRooms, error: deleteError } = await supabase
+			.from("rooms")
+			.delete()
+			.lt("created_at", twentyFourHoursAgo.toISOString())
+			.select("*");
+
+		if (deleteError) throw deleteError;
 
 		console.log(
-			`Deleted ${deletedRooms.length} expired rooms:`,
-			deletedRooms.map((r) => ({ id: r.id, name: r.name })),
+			`Deleted ${deletedRooms?.length || 0} expired rooms:`,
+			deletedRooms?.map((r: any) => ({ id: r.id, name: r.name })) || [],
 		);
 
 		return {
-			deletedCount: deletedRooms.length,
-			deletedRooms: deletedRooms.map((r) => ({
-				id: r.id,
-				name: r.name,
-				createdAt: r.createdAt,
-			})),
+			deletedCount: deletedRooms?.length || 0,
+			deletedRooms:
+				deletedRooms?.map((r: any) => ({
+					id: r.id,
+					name: r.name,
+					createdAt: r.created_at,
+				})) || [],
 		};
 	},
 );

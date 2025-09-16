@@ -13,6 +13,8 @@ export const env = createEnv({
 		ELECTRIC_SQL_CLOUD_SOURCE_ID: z.string().optional(),
 		ELECTRIC_SQL_CLOUD_SOURCE_SECRET: z.string().optional(),
 
+		SUPABASE_URL: z.string(),
+		SUPABASE_KEY: z.string(),
 
 		// OAuth2 providers, optional, update as needed
 		GITHUB_CLIENT_ID: z.string().optional(),

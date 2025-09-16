@@ -1,11 +1,12 @@
 import { env } from "~/env/server";
 import "dotenv/config";
+import { createClient } from "@supabase/supabase-js";
 
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+const supabaseKey = env.SUPABASE_KEY;
+const supabaseUrl = env.SUPABASE_URL;
 
-const connectionString = env.DATABASE_URL;
+// Supabase client setup
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Disable prefetch as it is not supported for "Transaction" pool mode
-export const client = postgres(connectionString, { prepare: false });
-export const db = drizzle(client);
+// Export as db for backward compatibility
+export const db = supabase;

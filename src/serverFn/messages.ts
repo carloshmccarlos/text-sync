@@ -1,15 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
-import { eq, sql } from "drizzle-orm";
 import * as v from "valibot";
-import { db } from "~/lib/db";
-import { messages } from "~/lib/db/schema/schema";
+import { supabase } from "~/lib/db";
 import { MessageCreateSchema, MessageUpdateSchema } from "~/validation/schema";
-import type { MessagesInsert } from "~/validation/types";
 
 // List all messages
 export const listMessages = createServerFn({ method: "GET" }).handler(
 	async () => {
-		return db.select().from(messages);
+		const { data, error } = await supabase
+			.from('messages')
+			.select('*');
+		
+		if (error) throw error;
+		return data || [];
 	},
 );
 
@@ -17,11 +19,12 @@ export const listMessages = createServerFn({ method: "GET" }).handler(
 export const getMessagesByRoom = createServerFn({ method: "POST" })
 	.validator(v.string())
 	.handler(async ({ data }) => {
-		const messagesList = await db
-			.select()
-			.from(messages)
-			.where(eq(messages.roomId, data));
+		const { data: messagesList, error } = await supabase
+			.from('messages')
+			.select('*')
+			.eq('room_id', data);
 
+		if (error) throw error;
 		return messagesList || [];
 	});
 
@@ -31,10 +34,13 @@ export const getMessage = createServerFn({ method: "POST" })
 	.handler(async ({ data }) => {
 		const { id } = data;
 
-		const [message] = await db
-			.select()
-			.from(messages)
-			.where(eq(messages.id, id));
+		const { data: message, error } = await supabase
+			.from('messages')
+			.select('*')
+			.eq('id', id)
+			.single();
+
+		if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
 		return message ?? null;
 	});
 
@@ -42,21 +48,21 @@ export const getMessage = createServerFn({ method: "POST" })
 export const createMessage = createServerFn({ method: "POST" })
 	.validator(MessageCreateSchema)
 	.handler(async ({ data }) => {
-		// Ensure all values are properly typed for CF Workers
+		// Ensure all values are properly typed for Supabase
 		const insertData = {
 			id: data.id || undefined,
-			roomId: data.roomId,
+			room_id: data.roomId,
 			title: data.title || null,
 			content: "",
 		};
 
-		const [message] = await db.insert(messages).values(insertData).returning({
-			id: messages.id,
-			title: messages.title,
-			content: messages.content,
-			txid: sql<string>`txid_current()::text`,
-		});
+		const { data: message, error } = await supabase
+			.from('messages')
+			.insert(insertData)
+			.select('*')
+			.single();
 
+		if (error) throw error;
 		return message;
 	});
 
@@ -66,7 +72,7 @@ export const updateMessage = createServerFn({ method: "POST" })
 	.handler(async ({ data }) => {
 		const { id, content, title } = data;
 
-		const updateValues: Partial<MessagesInsert> = {};
+		const updateValues: any = {};
 		if (typeof content !== "undefined") updateValues.content = content;
 		if (typeof title !== "undefined") updateValues.title = title;
 
@@ -74,17 +80,14 @@ export const updateMessage = createServerFn({ method: "POST" })
 			throw new Error("No fields provided to update");
 		}
 
-		const [updated] = await db
-			.update(messages)
-			.set(updateValues)
-			.where(eq(messages.id, id))
-			.returning({
-				id: messages.id,
-				title: messages.title,
-				content: messages.content,
-				txid: sql<string>`txid_current()::text`,
-			});
+		const { data: updated, error } = await supabase
+			.from('messages')
+			.update(updateValues)
+			.eq('id', id)
+			.select('*')
+			.single();
 
+		if (error) throw error;
 		return updated ?? null;
 	});
 
@@ -93,11 +96,13 @@ export const deleteMessage = createServerFn({ method: "POST" })
 	.validator(v.object({ id: v.string() }))
 	.handler(async ({ data }) => {
 		const { id } = data;
-		const [deleted] = await db
-			.delete(messages)
-			.where(eq(messages.id, id))
-			.returning({
-				txid: sql<string>`txid_current()::text`,
-			});
+		const { data: deleted, error } = await supabase
+			.from('messages')
+			.delete()
+			.eq('id', id)
+			.select('*')
+			.single();
+
+		if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
 		return deleted ?? null;
 	});

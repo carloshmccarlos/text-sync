@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ConfirmDialog } from "~/components/ConfirmDialog";
 import { MessagesList } from "~/components/MessagesList";
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/text-sync/$id")({
 		const roomId = params.id;
 
 		// Validate room exists
-		const { rooms: room, messages } = await getRoom({ data: { id: roomId } });
+		const { room, messages } = await getRoom({ data: { id: roomId } });
 
 		if (!room) {
 			throw redirect({ to: "/" });
@@ -37,14 +37,9 @@ export const Route = createFileRoute("/text-sync/$id")({
 			};
 		}
 
-		const messagesCollection = createMessagesCollection(room.id);
-
-		await messagesCollection.preload();
-
 		return {
-			messagesCollection,
 			room,
-			initMessageId: messages?.id,
+			initMessageId: messages?.[0]?.id,
 			isExpired: false,
 		};
 	},
@@ -54,8 +49,7 @@ export const Route = createFileRoute("/text-sync/$id")({
 });
 
 function TextSyncPage() {
-	const { room, isExpired, initMessageId, messagesCollection } =
-		Route.useLoaderData();
+	const { room, isExpired, initMessageId } = Route.useLoaderData();
 	const { t } = useTranslation();
 
 	const [isDeleting, setIsDeleting] = useState(false);
@@ -63,8 +57,7 @@ function TextSyncPage() {
 	const [selectedMessageId, setSelectedMessageId] = useState<
 		string | undefined
 	>(initMessageId);
-
-	if (!messagesCollection) return null;
+	const messagesCollection = createMessagesCollection(room.id);
 
 	if (isExpired) {
 		return <RoomExpiredError roomId={room.id} />;
