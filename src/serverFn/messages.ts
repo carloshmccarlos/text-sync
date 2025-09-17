@@ -6,10 +6,8 @@ import { MessageCreateSchema, MessageUpdateSchema } from "~/validation/schema";
 // List all messages
 export const listMessages = createServerFn({ method: "GET" }).handler(
 	async () => {
-		const { data, error } = await supabase
-			.from('messages')
-			.select('*');
-		
+		const { data, error } = await supabase.from("messages").select("*");
+
 		if (error) throw error;
 		return data || [];
 	},
@@ -20,9 +18,9 @@ export const getMessagesByRoom = createServerFn({ method: "POST" })
 	.validator(v.string())
 	.handler(async ({ data }) => {
 		const { data: messagesList, error } = await supabase
-			.from('messages')
-			.select('*')
-			.eq('room_id', data);
+			.from("messages")
+			.select("*")
+			.eq("room_id", data);
 
 		if (error) throw error;
 		return messagesList || [];
@@ -35,12 +33,12 @@ export const getMessage = createServerFn({ method: "POST" })
 		const { id } = data;
 
 		const { data: message, error } = await supabase
-			.from('messages')
-			.select('*')
-			.eq('id', id)
+			.from("messages")
+			.select("*")
+			.eq("id", id)
 			.single();
 
-		if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
+		if (error && error.code !== "PGRST116") throw error; // PGRST116 is "not found"
 		return message ?? null;
 	});
 
@@ -57,13 +55,17 @@ export const createMessage = createServerFn({ method: "POST" })
 		};
 
 		const { data: message, error } = await supabase
-			.from('messages')
+			.from("messages")
 			.insert(insertData)
-			.select('*')
+			.select("*")
 			.single();
 
 		if (error) throw error;
-		return message;
+		
+		// Generate a txid based on timestamp for synchronization
+		const txid = Date.now().toString();
+		
+		return { data: message, txid };
 	});
 
 // Update a message
@@ -81,28 +83,36 @@ export const updateMessage = createServerFn({ method: "POST" })
 		}
 
 		const { data: updated, error } = await supabase
-			.from('messages')
+			.from("messages")
 			.update(updateValues)
-			.eq('id', id)
-			.select('*')
+			.eq("id", id)
+			.select("*")
 			.single();
 
-		if (error) throw error;
-		return updated ?? null;
+		if (error) {
+			throw error;
+		}
+		
+		// Generate a txid based on timestamp for synchronization
+		const txid = Date.now().toString();
+		
+		return { data: updated ?? null, txid };
 	});
 
-// Delete a message by id
+
+
+
 export const deleteMessage = createServerFn({ method: "POST" })
 	.validator(v.object({ id: v.string() }))
 	.handler(async ({ data }) => {
 		const { id } = data;
 		const { data: deleted, error } = await supabase
-			.from('messages')
+			.from("messages")
 			.delete()
-			.eq('id', id)
-			.select('*')
+			.eq("id", id)
+			.select("*")
 			.single();
 
-		if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
+		if (error && error.code !== "PGRST116") throw error; // PGRST116 is "not found"
 		return deleted ?? null;
 	});

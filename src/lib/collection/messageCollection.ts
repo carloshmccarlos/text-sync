@@ -1,5 +1,5 @@
-import { createCollection } from "@tanstack/db";
 import { electricCollectionOptions } from "@tanstack/electric-db-collection";
+import { createCollection } from "@tanstack/react-db";
 import {
 	createMessage,
 	deleteMessage,
@@ -51,7 +51,7 @@ export const createMessagesCollection = (roomId: string) => {
 				const result = await createMessage({ data: createData });
 
 				const txid = result?.txid ? Number(result.txid) : 0;
-				return { txid, result };
+				return { txid };
 			},
 
 			onDelete: async ({ transaction }) => {
