@@ -1,7 +1,14 @@
 // export your other schemas here
 
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import {
+	integer,
+	pgTable,
+	text,
+	timestamp,
+	uuid,
+	varchar,
+} from "drizzle-orm/pg-core";
 
 // --------------------- ROOMS ---------------------
 export const rooms = pgTable("rooms", {
@@ -22,6 +29,12 @@ export const messages = pgTable("messages", {
 	content: text("content"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const totalCounts = pgTable("total_count", {
+	id: varchar("id", { length: 6 }).primaryKey(),
+	roomCount: integer("room_count").notNull(),
+	messageCount: integer("message_count").notNull(),
 });
 
 // --------------------- RELATIONS ---------------------

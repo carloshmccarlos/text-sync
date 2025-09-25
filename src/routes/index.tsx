@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 
 import {
 	ArrowRight,
@@ -64,6 +65,7 @@ export const Route = createFileRoute("/")({
 function Home() {
 	const navigate = useNavigate();
 	const { t, ready } = useTranslation();
+	const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 
 	// Show loading state until i18n is ready to prevent hydration mismatch
 	if (!ready) {
@@ -78,19 +80,24 @@ function Home() {
 	}
 
 	const handleStart = async () => {
-		// 1) Create a new room
-		const name = t("session.newSession");
+		setIsCreatingRoom(true);
+		try {
+			// 1) Create a new room
+			const name = t("session.newSession");
 
-		const room = await createRoom({ data: { name } });
-		if (!room?.id) return;
-		// 2) Create an empty message for this room
+			const room = await createRoom({ data: { name } });
+			if (!room?.id) return;
+			// 2) Create an empty message for this room
 
-		await createMessage({
-			data: { roomId: room.id, title: t("messages.newMessage") },
-		});
+			await createMessage({
+				data: { roomId: room.id, title: t("messages.newMessage") },
+			});
 
-		// 3) Navigate to the text sync page for this room
-		await navigate({ to: `/text-sync/${room.id}` });
+			// 3) Navigate to the text sync page for this room
+			await navigate({ to: `/text-sync/${room.id}` });
+		} finally {
+			setIsCreatingRoom(false);
+		}
 	};
 
 	const features = [
@@ -185,11 +192,21 @@ function Home() {
 								<Button
 									onClick={handleStart}
 									size="lg"
-									className="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+									disabled={isCreatingRoom}
+									className="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
 								>
-									<Plus className="w-5 h-5 mr-2" />
-									{t("home.createWorkspace")}
-									<ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+									{isCreatingRoom ? (
+										<>
+											<div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2" />
+											{t("home.creatingWorkspace", { defaultValue: "Creating..." })}
+										</>
+									) : (
+										<>
+											<Plus className="w-5 h-5 mr-2" />
+											{t("home.createWorkspace")}
+											<ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+										</>
+									)}
 								</Button>
 								<JoinRoomDialog />
 							</div>
