@@ -12,7 +12,6 @@ export default defineConfig({
 			projects: ["./tsconfig.json"],
 		}),
 		tailwindcss(),
-		cloudflare({ viteEnvironment: { name: "ssr" } }),
 
 		netlify(),
 		tanstackStart(),
