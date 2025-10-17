@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ConfirmDialog } from "~/components/ConfirmDialog";
 import { MessagesList } from "~/components/MessagesList";
@@ -8,7 +8,6 @@ import { SessionInfoCard } from "~/components/SessionInfoCard";
 import { TextSyncArea } from "~/components/TextSyncArea";
 import { Button } from "~/components/ui/button";
 import { createMessagesCollection } from "~/lib/collection/messageCollection";
-
 import { deleteRoom, getRoom } from "~/serverFn/rooms";
 
 export const Route = createFileRoute("/text-sync/$id")({
@@ -57,7 +56,12 @@ function TextSyncPage() {
 	const [selectedMessageId, setSelectedMessageId] = useState<
 		string | undefined
 	>(initMessageId);
-	const messagesCollection = createMessagesCollection(room.id);
+	
+	// Create collection once and reuse it (like const todosCollection = createCollection)
+	const messagesCollection = useMemo(
+		() => createMessagesCollection(room.id),
+		[room.id],
+	);
 
 	if (isExpired) {
 		return <RoomExpiredError roomId={room.id} />;

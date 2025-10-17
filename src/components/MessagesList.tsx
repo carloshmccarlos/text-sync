@@ -56,6 +56,15 @@ export function MessagesList({
 	};
 
 	const handleDeleteMessage = async (messageId: string) => {
+		// Check if the message exists in the collection before deleting
+		const existingMessage = messages?.find((m) => m.id === messageId);
+		if (!existingMessage) {
+			console.warn(
+				`Message with ID ${messageId} not found in collection, skipping delete`,
+			);
+			return;
+		}
+
 		try {
 			messagesCollection.delete(messageId);
 
@@ -68,14 +77,37 @@ export function MessagesList({
 				}
 			}
 		} catch (error) {
-			console.error("Failed to delete message:", error);
-			toast.error(t("messagesList.failedToDelete"));
+			// Silently handle collection errors - the message may have been deleted by another client
+			if (error instanceof Error && error.message.includes('CollectionOperationError')) {
+				console.warn(`Collection operation failed for message ${messageId}, likely already deleted`);
+				// Still update the UI state
+				if (selectedMessageId === messageId) {
+					const remainingMessages = messages?.filter((m) => m.id !== messageId);
+					if (remainingMessages && remainingMessages.length > 0) {
+						onSelectMessage(remainingMessages[0].id);
+					} else {
+						onSelectMessage("");
+					}
+				}
+			} else {
+				console.error("Failed to delete message:", error);
+				toast.error(t("messagesList.failedToDelete"));
+			}
 		}
 	};
 
 	const handleRenameMessage = async (messageId: string, newTitle: string) => {
 		if (!messagesCollection) {
 			console.error("Messages collection not available");
+			return;
+		}
+
+		// Check if the message exists in the collection before updating
+		const existingMessage = messages?.find((m) => m.id === messageId);
+		if (!existingMessage) {
+			console.warn(
+				`Message with ID ${messageId} not found in collection, skipping rename`,
+			);
 			return;
 		}
 
@@ -93,8 +125,13 @@ export function MessagesList({
 				},
 			});
 		} catch (error) {
-			console.error("Failed to rename message:", error);
-			toast.error(t("messages.failedToRename"));
+			// Silently handle collection errors - the message may have been deleted
+			if (error instanceof Error && error.message.includes('CollectionOperationError')) {
+				console.warn(`Collection operation failed for message ${messageId}, likely already deleted`);
+			} else {
+				console.error("Failed to rename message:", error);
+				toast.error(t("messages.failedToRename"));
+			}
 		}
 	};
 

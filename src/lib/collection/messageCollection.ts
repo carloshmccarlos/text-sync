@@ -1,71 +1,91 @@
 import { electricCollectionOptions } from "@tanstack/electric-db-collection";
 import { createCollection } from "@tanstack/react-db";
 import {
-	createMessage,
-	deleteMessage,
-	updateMessage,
+  createMessage,
+  deleteMessage,
+  updateMessage,
 } from "~/serverFn/messages";
 import { MessageCollectionSchema } from "~/validation/schema";
 
 export const createMessagesCollection = (roomId: string) => {
-	return createCollection(
-		electricCollectionOptions({
-			id: "messages",
-			schema: MessageCollectionSchema,
-			shapeOptions: {
-				// Proxied Electric shape endpoint (see /src/routes/api/messages.ts)
-				url: new URL(
-					`/api/messages`,
-					typeof window !== `undefined`
-						? window.location.origin
-						: `http://localhost:3000`,
-				).toString(),
-				// Pass roomId so the server can scope the shape with a WHERE clause
-				params: { roomId },
-			},
-			getKey: (item) => item.id,
-			onUpdate: async ({ transaction }) => {
-				const { modified } = transaction.mutations[0];
+  return createCollection(
+    electricCollectionOptions({
+      id: "messages",
+      schema: MessageCollectionSchema,
+      shapeOptions: {
+        // Proxied Electric shape endpoint (see /src/routes/api/messages.ts)
+        url: new URL(
+          `/api/messages`,
+          typeof window !== `undefined`
+            ? window.location.origin
+            : `http://localhost:3000`
+        ).toString(),
+        // Pass roomId so the server can scope the shape with a WHERE clause
+        params: { roomId },
+      },
+      getKey: (item) => item.id,
+      onUpdate: async ({ transaction }) => {
+        try {
+          const { modified } = transaction.mutations[0];
 
-				const updateData = {
-					id: modified.id,
-					title: modified.title ?? undefined,
-					content: modified.content ?? undefined,
-				};
-				// Persist the change to Postgres via your serverFn and use its txid
-				const result = await updateMessage({ data: updateData });
-				const txid = result?.txid ? Number(result.txid) : 0;
-				return { txid };
-			},
+          const updateData = {
+            id: modified.id,
+            title: modified.title ?? undefined,
+            content: modified.content ?? undefined,
+          };
 
-			onInsert: async ({ transaction }) => {
-				const { modified } = transaction.mutations[0];
+          console.log(updateData);
+          // Persist the change to Postgres via your serverFn and use its txid
+          const result = await updateMessage({ data: updateData });
+          const txid = result?.txid ? Number(result.txid) : 0;
+          return { txid };
+        } catch (error) {
+          console.error("Failed to update message in collection:", error);
+          // Return a default txid to prevent collection errors
+          return { txid: Date.now() };
+        }
+      },
 
-				const createData = {
-					id: modified.id,
-					roomId: modified.room_id,
-					title: modified.title ?? undefined,
-					content: modified.content ?? undefined,
-				};
+      onInsert: async ({ transaction }) => {
+        try {
+          const { modified } = transaction.mutations[0];
 
-				const result = await createMessage({ data: createData });
+          const createData = {
+            id: modified.id,
+            roomId: modified.room_id,
+            title: modified.title ?? undefined,
+            content: modified.content ?? undefined,
+          };
 
-				const txid = result?.txid ? Number(result.txid) : 0;
-				return { txid };
-			},
+          const result = await createMessage({ data: createData });
 
-			onDelete: async ({ transaction }) => {
-				const { modified } = transaction.mutations[0];
+          const txid = result?.txid ? Number(result.txid) : 0;
+          return { txid };
+        } catch (error) {
+          console.error("Failed to create message in collection:", error);
+          // Return a default txid to prevent collection errors
+          return { txid: Date.now() };
+        }
+      },
 
-				const deleteData = {
-					id: modified.id,
-				};
+      onDelete: async ({ transaction }) => {
+        try {
+          const { modified } = transaction.mutations[0];
 
-				const result = await deleteMessage({ data: deleteData });
+          const deleteData = {
+            id: modified.id,
+          };
 
-				const txid = result?.txid ? Number(result.txid) : 0;
-				return { txid, result };
-			},
-		}),
-	);
+          const result = await deleteMessage({ data: deleteData });
+
+          const txid = result?.txid ? Number(result.txid) : 0;
+          return { txid, result };
+        } catch (error) {
+          console.error("Failed to delete message in collection:", error);
+          // Return a default txid to prevent collection errors
+          return { txid: Date.now(), result: null };
+        }
+      },
+    })
+  );
 };

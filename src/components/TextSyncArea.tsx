@@ -58,6 +58,17 @@ export function TextSyncArea({
 		}) => {
 			if (!messageToUpdate?.id) return;
 
+			// Check if the message exists in the collection before updating
+			const existingMessage = messages?.find(
+				(m) => m.id === messageToUpdate.id,
+			);
+			if (!existingMessage) {
+				console.warn(
+					`Message with ID ${messageToUpdate.id} not found in collection, skipping update`,
+				);
+				return;
+			}
+
 			try {
 				messagesCollection.update(messageToUpdate.id, (draft) => {
 					if (typeof messageToUpdate.content !== "undefined") {
@@ -68,10 +79,15 @@ export function TextSyncArea({
 					}
 				});
 			} catch (error) {
-				console.error("Failed to update message:", error);
+				// Silently handle collection errors - the message may have been deleted
+				if (error instanceof Error && error.message.includes('CollectionOperationError')) {
+					console.warn(`Collection operation failed for message ${messageToUpdate.id}, likely already deleted`);
+				} else {
+					console.error("Failed to update message:", error);
+				}
 			}
 		},
-		[messagesCollection],
+		[messagesCollection, messages],
 	);
 
 	// Main debouncing logic: triggers a database update after a delay

@@ -90,6 +90,12 @@ export const updateMessage = createServerFn({ method: "POST" })
       .single();
 
     if (error) {
+      // If the message doesn't exist, return a graceful response instead of throwing
+      if (error.code === "PGRST116") {
+        console.warn(`Message with ID ${id} not found for update`);
+        const txid = Date.now().toString();
+        return { data: null, txid };
+      }
       throw error;
     }
 
@@ -111,6 +117,12 @@ export const deleteMessage = createServerFn({ method: "POST" })
       .single();
 
     if (error && error.code !== "PGRST116") throw error; // PGRST116 is "not found"
+    
+    // Log when trying to delete a non-existent message
+    if (error && error.code === "PGRST116") {
+      console.warn(`Message with ID ${id} not found for deletion`);
+    }
+    
     const txid = Date.now().toString();
 
     return { data: deleted ?? null, txid };
