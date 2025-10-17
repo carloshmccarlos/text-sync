@@ -75,12 +75,12 @@ export const createRoom = createServerFn({ method: "POST" })
 	});
 
 // Update a room
-export const updateRoom = createServerFn({ method: "POST" }).handler(
-	async (data: unknown) => {
-		const validatedData = v.parse(RoomUpdateSchema, data);
+export const updateRoom = createServerFn({ method: "POST" })
+	.inputValidator(RoomUpdateSchema)
+	.handler(async ({ data }) => {
 		const updateValues: any = {};
-		if (typeof validatedData.name === "string")
-			updateValues.name = validatedData.name;
+		if (typeof data.name === "string")
+			updateValues.name = data.name;
 
 		if (Object.keys(updateValues).length === 0) {
 			throw new Error("No fields provided to update");
@@ -89,14 +89,13 @@ export const updateRoom = createServerFn({ method: "POST" }).handler(
 		const { data: updated, error } = await supabase
 			.from("rooms")
 			.update(updateValues)
-			.eq("id", validatedData.id)
+			.eq("id", data.id)
 			.select("*")
 			.single();
 
 		if (error) throw error;
 		return updated ?? null;
-	},
-);
+	});
 
 // Update room timestamp
 export const updateRoomTimestamp = createServerFn({ method: "POST" })
