@@ -15,12 +15,12 @@ export const listMessages = createServerFn({ method: "GET" }).handler(
 
 // Get messages by room id
 export const getMessagesByRoom = createServerFn({ method: "POST" })
-	.validator(v.string())
-	.handler(async ({ data }) => {
+	.inputValidator(v.string())
+	.handler(async (ctx) => {
 		const { data: messagesList, error } = await supabase
 			.from("messages")
 			.select("*")
-			.eq("room_id", data);
+			.eq("room_id", ctx.data);
 
 		if (error) throw error;
 		return messagesList || [];
@@ -28,9 +28,9 @@ export const getMessagesByRoom = createServerFn({ method: "POST" })
 
 // Get one message by id
 export const getMessage = createServerFn({ method: "POST" })
-	.validator(v.object({ id: v.string() }))
-	.handler(async ({ data }) => {
-		const { id } = data;
+	.inputValidator(v.object({ id: v.string() }))
+	.handler(async (ctx) => {
+		const { id } = ctx.data;
 
 		const { data: message, error } = await supabase
 			.from("messages")
@@ -44,13 +44,13 @@ export const getMessage = createServerFn({ method: "POST" })
 
 // Create a message
 export const createMessage = createServerFn({ method: "POST" })
-	.validator(MessageCreateSchema)
-	.handler(async ({ data }) => {
+	.inputValidator(MessageCreateSchema)
+	.handler(async (ctx) => {
 		// Ensure all values are properly typed for Supabase
 		const insertData = {
-			id: data.id || undefined,
-			room_id: data.roomId,
-			title: data.title || null,
+			id: ctx.data.id || undefined,
+			room_id: ctx.data.roomId,
+			title: ctx.data.title || null,
 			content: "",
 		};
 
@@ -70,9 +70,9 @@ export const createMessage = createServerFn({ method: "POST" })
 
 // Update a message
 export const updateMessage = createServerFn({ method: "POST" })
-	.validator(MessageUpdateSchema)
-	.handler(async ({ data }) => {
-		const { id, content, title } = data;
+	.inputValidator(MessageUpdateSchema)
+	.handler(async (ctx) => {
+		const { id, content, title } = ctx.data;
 
 		const updateValues: any = {};
 		if (typeof content !== "undefined") updateValues.content = content;
@@ -99,13 +99,10 @@ export const updateMessage = createServerFn({ method: "POST" })
 		return { data: updated ?? null, txid };
 	});
 
-
-
-
 export const deleteMessage = createServerFn({ method: "POST" })
-	.validator(v.object({ id: v.string() }))
-	.handler(async ({ data }) => {
-		const { id } = data;
+	.inputValidator(v.object({ id: v.string() }))
+	.handler(async (ctx) => {
+		const { id } = ctx.data;
 		const { data: deleted, error } = await supabase
 			.from("messages")
 			.delete()
@@ -114,5 +111,7 @@ export const deleteMessage = createServerFn({ method: "POST" })
 			.single();
 
 		if (error && error.code !== "PGRST116") throw error; // PGRST116 is "not found"
-		return deleted ?? null;
+		const txid = Date.now().toString();
+
+		return { data: deleted ?? null, txid };
 	});

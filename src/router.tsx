@@ -6,16 +6,16 @@ import { DefaultCatchBoundary } from "~/components/DefaultCatchBoundary";
 import { NotFound } from "~/components/NotFound";
 import { routeTree } from "./routeTree.gen";
 
-export function createRouter() {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        refetchOnWindowFocus: false,
-        staleTime: 1000 * 60 * 2, // 2 minutes
-      },
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 2, // 2 minutes
     },
-  });
+  },
+});
 
+export function getRouter() {
   return routerWithQueryClient(
     createTanStackRouter({
       routeTree,
@@ -29,12 +29,12 @@ export function createRouter() {
       scrollRestoration: true,
       defaultStructuralSharing: true,
     }),
-    queryClient,
+    queryClient
   );
 }
 
 declare module "@tanstack/react-router" {
   interface Register {
-    router: ReturnType<typeof createRouter>;
+    router: ReturnType<typeof getRouter>;
   }
 }

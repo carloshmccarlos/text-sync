@@ -10,8 +10,8 @@ export const env = createEnv({
 		VITE_BASE_URL: z.url().default("http://localhost:3000"),
 		BETTER_AUTH_SECRET: z.string().min(1),
 		ELECTRIC_SHAPE_URL: z.url(),
-		ELECTRIC_SQL_CLOUD_SOURCE_ID: z.string().optional(),
-		ELECTRIC_SQL_CLOUD_SOURCE_SECRET: z.string().optional(),
+		ELECTRIC_SQL_CLOUD_SOURCE_ID: z.string().min(1),
+		ELECTRIC_SQL_CLOUD_SOURCE_SECRET: z.string().min(1),
 
 		SUPABASE_URL: z.string(),
 		SUPABASE_KEY: z.string(),

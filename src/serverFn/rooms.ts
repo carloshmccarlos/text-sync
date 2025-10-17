@@ -13,7 +13,7 @@ export const listRooms = createServerFn({ method: "GET" }).handler(async () => {
 
 // Get one room by id
 export const getRoom = createServerFn({ method: "POST" })
-	.validator(v.object({ id: v.string() }))
+	.inputValidator(v.object({ id: v.string() }))
 	.handler(async ({ data }) => {
 		// Get room with messages using Supabase's foreign key relationships
 		const { data: room, error } = await supabase
@@ -32,7 +32,7 @@ export const getRoom = createServerFn({ method: "POST" })
 
 // Create a room
 export const createRoom = createServerFn({ method: "POST" })
-	.validator(RoomCreateSchema)
+	.inputValidator(RoomCreateSchema)
 	.handler(async ({ data }) => {
 		const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 		const makeId = () =>
@@ -100,7 +100,7 @@ export const updateRoom = createServerFn({ method: "POST" }).handler(
 
 // Update room timestamp
 export const updateRoomTimestamp = createServerFn({ method: "POST" })
-	.validator(v.object({ id: v.string() }))
+	.inputValidator(v.object({ id: v.string() }))
 	.handler(async ({ data }) => {
 		const { data: updated, error } = await supabase
 			.from("rooms")
@@ -115,7 +115,7 @@ export const updateRoomTimestamp = createServerFn({ method: "POST" })
 
 // Delete a room by id
 export const deleteRoom = createServerFn({ method: "POST" })
-	.validator(v.object({ id: v.string() }))
+	.inputValidator(v.object({ id: v.string() }))
 	.handler(async ({ data }) => {
 		const { data: deleted, error } = await supabase
 			.from("rooms")
