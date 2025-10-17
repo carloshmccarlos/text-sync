@@ -1,6 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-
 import {
 	ArrowRight,
 	Clock,
@@ -18,6 +16,7 @@ import {
 	Users,
 	Zap,
 } from "lucide-react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { JoinRoomDialog } from "~/components/JoinRoomDialog";
 import { Button } from "~/components/ui/button";
@@ -198,7 +197,9 @@ function Home() {
 									{isCreatingRoom ? (
 										<>
 											<div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2" />
-											{t("home.creatingWorkspace", { defaultValue: "Creating..." })}
+											{t("home.creatingWorkspace", {
+												defaultValue: t("messagesList.creating"),
+											})}
 										</>
 									) : (
 										<>
