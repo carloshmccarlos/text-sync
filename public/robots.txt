@@ -1,14 +1,16 @@
-# Allow all crawling
+# TextSync - Real-time Cross-Device Clipboard
+# https://www.robotstxt.org/robotstxt.html
+
 User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /text-sync/*/delete
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /private/
 
 # Crawl-delay for respectful crawling
 Crawl-delay: 1
 
-# Sitemap location
-Sitemap: /sitemap.xml
-
-# TextSync - Real-time Cross-Device Clipboard
-# https://www.robotstxt.org/robotstxt.html)
+# Sitemap location (must be absolute URL)
+Sitemap: https://text-sync.loveyouall.qzz.io/sitemap.xml
